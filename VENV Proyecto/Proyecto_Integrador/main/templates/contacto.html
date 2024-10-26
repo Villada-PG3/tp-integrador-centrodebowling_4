@@ -1,0 +1,118 @@
+<title>{% block title %}Strike Zone - Contacto{% endblock %}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+
+<header>
+    <div class="header-container">
+        <a href="{% url 'index' %}" class="logo">Strike Zone</a>
+        <nav>
+            <ul class="nav-menu">
+                <li><a href="{% url 'index' %}">Inicio</a></li>
+                
+
+                
+
+                <li><a href="{% url 'reserva' %}">Reservar</a></li>
+                {% if user.is_authenticated %}
+                    <li><a href="{% url 'misreservas' %}">Mis Reservas</a></li>
+                {% endif %}
+
+                
+
+                
+
+                
+                <li><a href="{% url 'contacto' %}">Contacto</a></li>
+            </ul>
+        </nav>
+        
+
+        
+
+        <div class="auth-buttons">
+            {% if user.is_authenticated %}
+            
+            {% if user.is_superuser %}
+                <form action="{% url 'admin:index' %}">
+                    <button type='submit' class="btn btn-register"  >Administrar</button>
+                </form>
+            {% endif %}
+            <form action="{% url 'logout' %}">
+                <button type='submit' class="btn btn-login"  >Cerrar Sesión</button>
+            </form>
+
+            
+            {% else %}
+            <form action="{% url 'login' %}">
+                <button type='submit' class="btn btn-login"  >Iniciar Sesión</button>
+            </form>
+
+            <form action="{% url 'registrar' %}">
+                <button  type='submit' class="btn btn-register"  >Registrarse</button>
+            </form>
+            
+            
+            {% endif %}
+        </div>
+    </div>
+</header>
+
+{%load static%}
+    <link rel="stylesheet" href="../static/css/contacto.css">
+
+{% block content %}
+
+
+<section class="contact-section">
+    <h2>Contacto</h2>
+    <div class="contact-content">
+        
+        <div class="contact-info">
+            <div class="info-card">
+                <div class="info-item">
+                    <h3><i class="fas fa-map-marker-alt"></i> Dirección</h3>
+                    <p>123 Calle Bowling, Ciudad Deportiva<br>CP 12345, España</p>
+                </div>
+                <div class="info-item">
+                    <h3><i class="fas fa-phone-alt"></i> Teléfono</h3>
+                    <p>+34 123 456 789</p>
+                    <p>+34 987 654 321 (Reservas)</p>
+                </div>
+                <div class="info-item">
+                    <h3><i class="fas fa-envelope"></i> Email</h3>
+                    <p>info@strikezone.com</p>
+                    <p>reservas@strikezone.com</p>
+                </div>
+                <div class="info-item">
+                    <h3><i class="fas fa-clock"></i> Horario</h3>
+                    <p>Lunes a Viernes: 14:00 - 00:00</p>
+                    <p>Sábados y Domingos: 12:00 - 02:00</p>
+                </div>
+            </div>
+            <div class="social-links">
+                <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+            </div>
+            <div class="map-container">
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d12345.67890!2d-3.70379!3d40.41678!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDDCsDI1JzAwLjQiTiAzwrA0MicxMy42Ilc!5e0!3m2!1sen!2ses!4v1234567890123!5m2!1sen!2ses" allowfullscreen="" loading="lazy"></iframe>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<script>
+    
+
+    // Animación suave al hacer scroll a las secciones
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            document.querySelector(this.getAttribute('href')).scrollIntoView({
+                behavior: 'smooth'
+            });
+        });
+    });
+</script>

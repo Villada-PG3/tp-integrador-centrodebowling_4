@@ -1,0 +1,115 @@
+<title>{% block title %}Strike Zone - Partidas & Bar{% endblock %}</title>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+<header>
+    <div class="header-container">
+        <a href="{% url 'index' %}" class="logo">Strike Zone</a>
+        <nav>
+            <ul class="nav-menu">
+                <li><a href="{% url 'index' %}">Inicio</a></li>
+                <li><a href="{% url 'reserva' %}">Reservar</a></li>
+                {% if user.is_authenticated %}
+                    <li><a href="{% url 'misreservas' %}">Mis Reservas</a></li>
+                {% endif %}
+                <li><a href="{% url 'contacto' %}">Contacto</a></li>
+            </ul>
+        </nav>
+        <div class ="auth-buttons">
+            {% if user.is_authenticated %}
+                {% if user.is_superuser %}
+                    <form action="{% url 'admin:index' %}">
+                        <button type='submit' class="btn btn-register">Administrar</button>
+                    </form>
+                {% endif %}
+                <form action="{% url 'logout' %}">
+                    <button type='submit' class="btn btn-login">Cerrar Sesión</button>
+                </form>
+            {% else %}
+                <form action="{% url 'login' %}">
+                    <button type='submit' class="btn btn-login">Iniciar Sesión</button>
+                </form>
+                <form action="{% url 'registrar' %}">
+                    <button type='submit' class="btn btn-register">Registrarse</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+</header>
+
+
+
+{% load static %}
+{% load tags2 %}
+<link rel="stylesheet" href="{% static '../static/css/tabla.css' %}">
+
+{% block content %}
+<div class="scorecard">
+    <h1>Tabla Puntuaciones - Partida {{ num_partida }}</h1>
+    
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <form id="turno-form" method="post" action="{% url 'tabla' num_partida %}">
+        {% csrf_token %}
+        <table>
+            <thead>
+                <tr>
+                    <th class="player-name">Jugador</th>
+                    {% for turn in turnos %}
+                        <th class="frame">{{ turn.orden }}</th>
+                    {% endfor %}
+                    <th class="total">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for jugador in jugadores %}
+                <tr>
+                    <td class="player-name">{{ jugador.nombre_jugador }}</td>
+                    {% for turno in turnos %}
+                        {% with key=jugador.id_jugador|merge:turno.numero_turno %}
+                            <td>
+                                {% if tiradas_dict|get_item:key %}
+                                    {% for tirada in tiradas_dict|get_item:key %}
+                                        {% if forloop.last %}
+                                            {{ tirada.pinos_deribados }}
+                                        {% else %}
+                                            {{ tirada.pinos_deribados }} -
+                                        {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    {% if turno == current_turn %}
+                                        <div class="rolls">
+                                            <input type="text" maxlength="1" placeholder="0" name="jugador_{{ jugador.id_jugador }}_turno_{{ turno.numero_turno }}_tirada_1">
+                                            <input type="text" maxlength="1" placeholder="0" name="jugador_{{ jugador.id_jugador }}_turno_{{ turno.numero_turno }}_tirada_2">
+                                            {% if turno.ultimo_turno %}
+                                                <input type="text" maxlength="1" placeholder="0" name="jugador_{{ jugador.id_jugador }}_turno_{{ turno.numero_turno }}_tirada_3">
+                                            {% endif %}
+                                        </div>
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                        {% endwith %}
+                    {% endfor %}
+                    <td>
+                        {{ puntaje_jugador|get_item:jugador.id_jugador }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button class="finish-button" type="submit">
+            {% if current_turn.ultimo_turno %}Finalizar partida{% else %}Finalizar turno{% endif %}
+        </button>
+    </form>
+</div>
+{% endblock %}
+
+
+

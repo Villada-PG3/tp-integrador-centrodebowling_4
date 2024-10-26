@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Strike Zone - Centro de Bowling{% endblock %}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    {%load static%}
+    <link rel="stylesheet" href="../static/css/index.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <a href="{% url 'index' %}" class="logo">Strike Zone</a>
+            <nav>
+                <ul class="nav-menu">
+                    <li><a href="{% url 'index' %}">Inicio</a></li>
+                    
+    
+                    
+    
+                    <li><a href="{% url 'reserva' %}">Reservar</a></li>
+                    {% if user.is_authenticated %}
+                        <li><a href="{% url 'misreservas' %}">Mis Reservas</a></li>
+                    {% endif %}
+    
+                    
+    
+                    
+    
+                    
+                    <li><a href="{% url 'contacto' %}">Contacto</a></li>
+                </ul>
+            </nav>
+            
+
+            
+
+            <div class="auth-buttons">
+                {% if user.is_authenticated %}
+                
+                {% if user.is_superuser %}
+                    <form action="{% url 'admin:index' %}">
+                        <button type='submit' class="btn btn-register"  >Administrar</button>
+                    </form>
+                {% endif %}
+                <form action="{% url 'logout' %}">
+                    <button type='submit' class="btn btn-login"  >Cerrar Sesión</button>
+                </form>
+
+                
+                {% else %}
+                <form action="{% url 'login' %}">
+                    <button type='submit' class="btn btn-login"  >Iniciar Sesión</button>
+                </form>
+
+                <form action="{% url 'registrar' %}">
+                    <button  type='submit' class="btn btn-register"  >Registrarse</button>
+                </form>
+                
+                
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <main>
+        {% block content %}
+    
+            <section class="hero">
+                <div class="hero-content">
+                    <h1>Bienvenido a Strike Zone</h1>
+                    <p>Vive la experiencia de bowling más emocionante en un ambiente moderno y divertido.</p>
+                    <form action="{% url 'reserva' %}">
+                        <button class="cta-btn">Reserva Ahora</button>
+                    </form>
+                </div>
+            </section>
+        
+            <section class="bowling-experience">
+                <div class="experience-item">
+                    <img src="https://picsum.photos/1350/900?random=1" alt="Pistas de bowling iluminadas">
+                    <div class="experience-text">
+                        <h2>Pistas Modernas</h2>
+                        <p>Disfruta de nuestras pistas con la última tecnología e iluminación LED.</p>
+                    </div>
+                </div>
+                <div class="experience-item">
+                    <img src="https://picsum.photos/1350/900?random=2" alt="Grupo de amigos jugando bowling">
+                    <div class="experience-text">
+                        <h2>Diversión Garantizada</h2>
+                        <p>Comparte momentos inolvidables con amigos y familia en nuestro centro.</p>
+                    </div>
+                </div>
+                <div class="experience-item">
+                    <img src="https://picsum.photos/1350/900?random=3" alt="Bar y zona de descanso">
+                    <div class="experience-text">
+                        <h2>Área de Relax</h2>
+                        <p>Disfruta de nuestro bar y zona de descanso entre partidas.</p>
+                    </div>
+                </div>
+            </section>
+        
+            <section class="features">
+                <div class="features-container">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-bowling-ball"></i>
+                        </div>
+                        <h3 class="feature-title">Equipamiento de Última Generación</h3>
+                        <p class="feature-description">Disfruta de nuestras pistas con tecnología de punta y bolas de bowling de calidad profesional.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-cocktail"></i>
+                        </div>
+                        <h3 class="feature-title">Bar y Snacks</h3>
+                        <p class="feature-description">Relájate con una amplia selección de bebidas y deliciosos aperitivos mientras juegas.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3 class="feature-title">Eventos y Torneos</h3>
+                        <p class="feature-description">Organiza tus fiestas privadas o participa en nuestros emocionantes torneos semanales.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-music"></i>
+                        </div>
+                        <h3 class="feature-title">Ambiente Único</h3>
+                        <p class="feature-description">Sumérgete en nuestra atmósfera vibrante con iluminación LED y música de moda.</p>
+                    </div>
+                </div>
+            </section>
+        
+            <section class="testimonials">
+                <div class="testimonials-container">
+                    <div class="testimonial-card">
+                        <p class="testimonial-text">"¡La mejor experiencia de bowling que he tenido! Las pistas son increíbles y el ambiente es genial. Definitivamente volveré con mis amigos."</p>
+                        <p class="testimonial-author">- María G.</p>
+                    </div>
+                    <div class="testimonial-card">
+                        <p class="testimonial-text">"Organizamos el cumpleaños de mi hijo aquí y fue un éxito total. El personal fue muy amable y atento. ¡Todos los niños quieren volver!"</p>
+                        <p class="testimonial-author">- Carlos R.</p>
+                    </div>
+                </div>
+            </section>
+        
+            
+        
+            
+        
+            
+
+        {% endblock %}
+    </main>
+    <script>
+        
+
+        const experienceItems = document.querySelectorAll('.experience-item');
+
+        const experienceObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.querySelector('.experience-text').style.opacity = 1;
+                    entry.target.querySelector('.experience-text').style.transform = 'translateY(0)';
+                } else {
+                    entry.target.querySelector('.experience-text').style.opacity = 0;
+                    entry.target.querySelector('.experience-text').style.transform = 'translateY(50px)';
+                }
+            });
+        }, { threshold: 0.5 });
+
+        experienceItems.forEach(item => {
+            experienceObserver.observe(item);
+        });
+
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            experienceItems.forEach(item => {
+                const image = item.querySelector('img');
+                const yPos = -(scrolled - item.offsetTop) / 4;
+                image.style.transform = `translateY(${yPos}px)`;
+            });
+        });
+
+    
+
+        
+
+        // Scroll suave
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
+

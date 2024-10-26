@@ -1,0 +1,205 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+    
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    body {
+        font-family: 'Poppins', sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background-color: #f8f9fa;
+    }
+    header {
+        background-color: rgba(255, 255, 255, 0.95);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        padding: 1rem 0;
+        position: fixed;
+        width: 100%;
+        top: 0;
+        z-index: 1000;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+    }
+    .header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+    .logo {
+        color: #ff6600;
+        font-size: 1.8rem;
+        font-weight: bold;
+        text-decoration: none;
+        letter-spacing: 1px;
+    }
+    .nav-menu {
+        display: flex;
+        list-style-type: none;
+        
+    }
+    .nav-menu li {
+        margin-left: 30px;
+    }
+    .nav-menu a {
+        color: #333;
+        text-decoration: none;
+        font-size: 1rem;
+        font-weight: 500;
+        transition: color 0.3s ease;
+    }
+    .nav-menu a:hover {
+        color: #ff6600;
+    }
+    .auth-buttons {
+        display: flex;
+        gap: 15px;
+    }
+    .content {
+        padding: 2rem;
+    }
+
+    .reservation-card {
+        background-color: white;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 25px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-login {
+        background-color: transparent;
+        color: #ff6600;
+        border: 2px solid #ff6600;
+    }
+    .btn-register {
+        background-color: #ff6600;
+        color: white;
+    }
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+    }
+    .btn-danger {
+        background-color: #dc3545;
+        color: white;
+    }
+    .btn-success {
+        background-color: #28a745;
+        color: white;
+    }
+    .btn-disabled {
+        background-color: #6c757d;
+        color: white;
+        cursor: not-allowed;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 25px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        
+        transition: all 0.3s ease;
+    }
+
+
+
+
+    .nav-secondary {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        padding: 0;
+        display: block;
+    }
+    .nav-secondary ul {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+    }
+    .nav-secondary li {
+        margin: 0;
+    }
+    .nav-secondary a {
+        color: #495057;
+        text-decoration: none;
+        padding: 1rem 2rem;
+        display: block;
+        border-bottom: 3px solid transparent;
+    }
+    .nav-secondary a.active {
+        color: #ff6600;
+        border-bottom-color: #ff6600;
+    }
+    .section {
+        display: none;
+        margin-top: 1rem;
+    }
+    .section.active {
+        display: block;
+    }
+    .game-slot {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        padding: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    .order-list {
+        list-style-type: none;
+        padding: 0;
+    }
+    .order-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+    }
+    .subtotal {
+        font-weight: bold;
+        text-align: right;
+        margin-top: 1rem;
+    }
+    .total {
+        font-weight: bold;
+        font-size: 1.2rem;
+        text-align: right;
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+    }
+    .new-order-form {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+    .form-group input, .form-group select {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+    }

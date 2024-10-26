@@ -1,0 +1,104 @@
+<title>{% block title %}Strike Zone - Reserva{% endblock %}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+<header>
+    <div class="header-container">
+        <a href="{% url 'index' %}" class="logo">Strike Zone</a>
+        <nav>
+            <ul class="nav-menu">
+                <li><a href="{% url 'index' %}">Inicio</a></li>
+                
+
+                
+
+                <li><a href="{% url 'reserva' %}">Reservar</a></li>
+                {% if user.is_authenticated %}
+                    <li><a href="{% url 'misreservas' %}">Mis Reservas</a></li>
+                {% endif %}
+
+                
+
+                
+
+                
+                <li><a href="{% url 'contacto' %}">Contacto</a></li>
+            </ul>
+        </nav>
+        
+
+        
+
+        <div class="auth-buttons">
+            {% if user.is_authenticated %}
+            
+            {% if user.is_superuser %}
+                <form action="{% url 'admin:index' %}">
+                    <button type='submit' class="btn btn-register"  >Administrar</button>
+                </form>
+            {% endif %}
+            <form action="{% url 'logout' %}">
+                <button type='submit' class="btn btn-login"  >Cerrar Sesión</button>
+            </form>
+
+            
+            {% else %}
+            <form action="{% url 'login' %}">
+                <button type='submit' class="btn btn-login"  >Iniciar Sesión</button>
+            </form>
+
+            <form action="{% url 'registrar' %}">
+                <button  type='submit' class="btn btn-register"  >Registrarse</button>
+            </form>
+            
+            
+            {% endif %}
+        </div>
+    </div>
+</header>
+
+{%load static%}
+    <link rel="stylesheet" href="../static/css/misreservas.css">
+
+    {% block content %}
+
+    <h1 class="reservations-title">Mis Reservas</h1>
+    
+    <div class="reservations-container">
+        {% for reserva in object_list %}
+            <div class="reservation-card">
+                <div class="reservation-header">
+                    <span class="reservation-date">{{ reserva.fecha_hora_reserva }} - {{ reserva.fecha_hora_fin }}</span>
+                    {% if reserva.ultimo_estado %}
+                        <span class="reservation-status {% if reserva.ultimo_estado.estado.estado == 'Confirmada' %}status-confirmed{% endif %}">{{ reserva.ultimo_estado.estado.estado }}</span>
+                    {% else %}
+                        <span class="reservation-status">Estado desconocido</span>
+                    {% endif %}
+                </div>
+                <div class="reservation-details">
+                    <div class="detail-item">
+                        <span class="detail-icon">🎳</span>
+                        <span>{{ reserva.id_pista }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">🎮</span>
+                        <span>3 Partidas</span>
+                    </div>
+                </div>
+                <div class="reservation-actions">
+                    <form action="{% url 'mi_reserva' reserva.id_reserva %}">
+                        <button class="action-btn btn-modify">Ver</button>
+                    </form>
+                    {% if reserva.id_reserva %}
+                        <form action="{% url 'cancelar_reserva' reserva.id_reserva %}" method="post">
+                            {% csrf_token %}
+                            <button class="action-btn btn-cancel">Cancelar</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        {% empty %}
+            <li>No tienes reservas.</li>
+        {% endfor %}
+    </div>
+    
+    {% endblock %}

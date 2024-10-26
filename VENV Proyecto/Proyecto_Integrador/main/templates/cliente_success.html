@@ -1,0 +1,12 @@
+{% extends "index.html" %}
+<title>{% block title %}Strike Zone - Registro Exitoso{% endblock %}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+{%load static%}
+    <link rel="stylesheet" href="../static/css/index.css">
+
+{% block content %}
+<div class="container mt-5">
+    <h2>¡Cliente registrado con éxito!</h2>
+    <a href="{% url 'login' %}" class="btn btn-success">iniciar sesion</a>
+</div>
+{% endblock %}

@@ -1,0 +1,14 @@
+asgiref==3.8.1
+certifi==2024.8.30
+charset-normalizer==3.3.2
+click==8.1.7
+Django==5.1
+idna==3.8
+mysqlclient==2.2.4
+pillow==10.4.0
+requests==2.32.3
+sqlparse==0.5.1
+svgwrite==1.4.3
+Tree==0.2.4
+typing_extensions==4.12.2
+urllib3==2.2.2

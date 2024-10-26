@@ -1,0 +1,224 @@
+<title>{% block title %}Strike Zone - Partidas & Bar{% endblock %}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+
+<header>
+    <div class="header-container">
+        <a href="{% url 'index' %}" class="logo">Strike Zone</a>
+        <nav>
+            <ul class="nav-menu">
+                <li><a href="{% url 'index' %}">Inicio</a></li>
+                
+
+                
+
+                <li><a href="{% url 'reserva' %}">Reservar</a></li>
+                {% if user.is_authenticated %}
+                    <li><a href="{% url 'misreservas' %}">Mis Reservas</a></li>
+                {% endif %}
+
+                
+
+                
+
+                
+                <li><a href="{% url 'contacto' %}">Contacto</a></li>
+            </ul>
+        </nav>
+        
+
+        
+
+        <div class="auth-buttons">
+            {% if user.is_authenticated %}
+            
+            {% if user.is_superuser %}
+                <form action="{% url 'admin:index' %}">
+                    <button type='submit' class="btn btn-register"  >Administrar</button>
+                </form>
+            {% endif %}
+            <form action="{% url 'logout' %}">
+                <button type='submit' class="btn btn-login"  >Cerrar Sesión</button>
+            </form>
+
+            
+            {% else %}
+            <form action="{% url 'login' %}">
+                <button type='submit' class="btn btn-login"  >Iniciar Sesión</button>
+            </form>
+
+            <form action="{% url 'registrar' %}">
+                <button  type='submit' class="btn btn-register"  >Registrarse</button>
+            </form>
+            
+            
+            {% endif %}
+        </div>
+    </div>
+</header>
+
+{%load static%}
+<link rel="stylesheet" href="{% static 'css/menu_partidas_bar.css' %}">
+
+{% load tags2 %}  <!-- Asegúrate de cargar tus filtros personalizados aquí -->
+
+
+
+
+
+{% block content %}
+<br><br><br><br>
+<div class="content">
+    <div class="reservation-card">
+        {% if reserva %}
+            <h2>{{ reserva.fecha_hora_reserva }} | {{ reserva.fecha_hora_fin }} -  {{ reserva.id_pista }}</h2>
+            <p>3 Partidas</p>
+            <p>Estado de la reserva: {{ estado_reserva }}</p>
+        {% else %}
+            <p>No se encontró la reserva.</p>
+        {% endif %}
+    </div>
+
+    <nav id="navSecondary" class="nav-secondary">
+        <ul>
+            <li><a href="#partidas" class="active">Partidas</a></li>
+            <li><a href="#pedidos">Pedidos</a></li>
+        </ul>
+    </nav>
+
+    <section id="partidas" class="section active">
+        <h3>Partidas</h3>
+    
+        {% for partida in partidas %}
+            <div class="game-slot">
+                <p>Partida {{ forloop.counter }} - {{ partida.estado.estado }}</p>
+                {% if partida.estado.estado == 'Disponible' and estado_reserva == 'En curso' %}
+                    <a href="{% url 'iniciar_partida' partida.id_partida %}" class="btn btn-success">Iniciar</a>
+                {% elif partida.estado.estado == 'En proceso' %}
+                    <a href="{% url 'tabla' partida.id_partida %}" class="btn btn-primary">Jugar</a>
+                {% elif partida.estado.estado == 'Finalizada' %}
+                    <p>Ganador: {{ partida.ganador.nombre_jugador }}</p>
+                {% else %}
+                    <button class="btn btn-disabled" disabled>Bloqueada</button>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </section>
+    <section id="pedidos" class="section">
+        <h3>Pedidos</h3>
+        <div id="orderList" class="order-list">  
+            {% for pedido in pedidos %}
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <strong>Pedido - {{ pedido.estado.estado }}</strong>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group">
+                            {% for item in pedido.pedidoxproducto_set.all %}
+                                <li class="list-group-item">
+                                    <span class="badge badge-primary">x{{ item.cantidad }}</span>
+                                    {{ item.id_producto.nombre }} - ${{ item.cantidad|multiply:item.id_producto.precio }}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <div id="total" class="total">
+            <h5>Total a Pagar: <span class="text-success">${{ totalAPagar }}</span></h5>
+        </div>
+        
+        <!-- Formulario para agregar nuevos pedidos -->
+        <form id="formAgregarPedido" method="post" action="{% url 'agregar_pedido' reserva.id_reserva %}">
+            {% csrf_token %}
+            <div id="pedidoContainer">
+                <div class="pedidoItem">
+                    <select name="producto" required>
+                        {% for producto in productos %}
+                            <option value="{{ producto.id_producto }}">{{ producto.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                    
+                    <input type="number" name="cantidad" min="1" required placeholder="Cantidad">
+                    
+                    <button type="button" class="btn btn-danger removePedido">Eliminar</button>
+                </div>
+            </div>
+            <br><br>
+            <button type="button" id="addPedido" class="btn btn-secondary">Agregar Otro Producto</button>
+            <button type="submit" class="btn btn-primary">Agregar Pedidos</button>
+        </form>
+    </section>
+
+    {% endblock %}
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const navSecondary = document.getElementById('navSecondary');
+            const sections = document.querySelectorAll('.section');
+            const navLinks = navSecondary.querySelectorAll('a');
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                    const targetId = this.getAttribute('href').substring(1);
+                    sections.forEach(section => {
+                        section.classList.remove('active');
+                        if (section.id === targetId) {
+                            section.classList.add('active');
+                        }
+                    });
+                });
+            });
+        });
+        document.getElementById('addPedido').addEventListener('click', function() {
+            const container = document.getElementById('pedidoContainer');
+            const newPedido = document.createElement('div');
+            newPedido.className = 'pedidoItem';
+            newPedido.innerHTML = `
+                <br>
+                <select name="producto" required>
+                        {% for producto in productos %}
+                            <option value="{{ producto.id_producto }}">{{ producto.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                    
+                    <input type="number" name="cantidad" min="1" required placeholder="Cantidad">
+                    
+                    <button type="button" class="btn btn-danger removePedido">Eliminar</button>
+            `;
+            container.appendChild(newPedido);
+        });
+    
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('removePedido')) {
+                e.target.parentNode.remove();
+            }
+        });
+    
+        document.getElementById(' formAgregarPedido').addEventListener('submit', function(event) {
+            event.preventDefault(); // Evitar el envío normal del formulario
+            var formData = new FormData(this);
+            fetch(this.action, {
+                method: 'POST ',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Actualizar la lista de pedidos o hacer algo más
+                    alert(data.message);
+                    location.reload(); // Recargar la página para ver los nuevos pedidos
+                } else {
+                    alert('Error al agregar los pedidos.');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    </script>

@@ -1,0 +1,135 @@
+<title>{% block title %}Strike Zone - Reserva{% endblock %}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+<header>
+    <div class="header-container">
+        <a href="{% url 'index' %}" class="logo">Strike Zone</a>
+        <nav>
+            <ul class="nav-menu">
+                <li><a href="{% url 'index' %}">Inicio</a></li>
+                
+
+                
+
+                <li><a href="{% url 'reserva' %}">Reservar</a></li>
+                {% if user.is_authenticated %}
+                    <li><a href="{% url 'misreservas' %}">Mis Reservas</a></li>
+                {% endif %}
+
+                
+
+                
+
+                
+                <li><a href="{% url 'contacto' %}">Contacto</a></li>
+            </ul>
+        </nav>
+        
+
+        
+
+        <div class="auth-buttons">
+            {% if user.is_authenticated %}
+            
+            {% if user.is_superuser %}
+                <form action="{% url 'admin:index' %}">
+                    <button type='submit' class="btn btn-register"  >Administrar</button>
+                </form>
+            {% endif %}
+            <form action="{% url 'logout' %}">
+                <button type='submit' class="btn btn-login"  >Cerrar Sesión</button>
+            </form>
+
+            
+            {% else %}
+            <form action="{% url 'login' %}">
+                <button type='submit' class="btn btn-login"  >Iniciar Sesión</button>
+            </form>
+
+            <form action="{% url 'registrar' %}">
+                <button  type='submit' class="btn btn-register"  >Registrarse</button>
+            </form>
+            
+            
+            {% endif %}
+        </div>
+    </div>
+</header>
+
+{%load static%}
+    <link rel="stylesheet" href="../static/css/reserva.css">
+
+{% block content %}
+
+
+    <h1>Reservar Pista de Bowling</h1>
+    <form class="reservation-form" id="reservationForm" method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="{{ form.fecha_hora_reserva.id_for_label }}" class="col-form-label">{{ form.fecha_hora_reserva.label }}</label>
+            {{ form.fecha_hora_reserva }}
+
+            <br>
+            
+
+            
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.email_cliente.id_for_label }}" class="col-form-label">{{ form.email_cliente.label }}</label>
+            {{ form.email_cliente }}
+        </div>
+
+        <div class="form-group">
+            {% load my_tags %}
+            <label>{{ form.id_pista.label }}</label>
+            <div class="lanes-container" id="lanesContainer">
+                {% for pista in form.id_pista %}
+                    <div class="lane">
+                        {% if pista.choice_value|comprobar_disponibilidad_pistas:form.fecha_hora_reserva.value %}
+                            
+                        {% else %}
+                            <!-- Aquí se imprime la pista y un mensaje de error si no está disponible -->
+                            <span class="available">{{ pista }}</span>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% if user.is_authenticated %}
+            <button type="submit" class="btn-submit">Reservar</button>
+        {% else %}
+        <br>
+            <a href="{% url 'login' %}" class="btn-submit">Reservar</a>
+        {% endif %}
+        {% if form.errors %}
+            <div class="alert alert-danger">
+                {{ form.errors }}
+            </div>
+        {% endif %}
+    </form>
+
+    
+
+    
+{% endblock %}
+
+<script>
+    // Set minimum date to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('date').setAttribute('min', today);
+
+    document.addEventListener('DOMContentLoaded', function() {
+            const lanesContainer = document.getElementById('lanesContainer');
+            const form = document.getElementById('reservationForm');
+
+            
+    });
+
+     
+
+    
+    
+
+    
+</script>

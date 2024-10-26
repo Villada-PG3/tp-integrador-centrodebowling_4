@@ -1,0 +1,63 @@
+<title>{% block title %}Strike Zone - Partidas & Bar{% endblock %}</title>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+<header>
+    <div class="header-container">
+        <a href="{% url 'index' %}" class="logo">Strike Zone</a>
+        <nav>
+            <ul class="nav-menu">
+                <li><a href="{% url 'index' %}">Inicio</a></li>
+                <li><a href="{% url 'reserva' %}">Reservar</a></li>
+                {% if user.is_authenticated %}
+                    <li><a href="{% url 'misreservas' %}">Mis Reservas</a></li>
+                {% endif %}
+                <li><a href="{% url 'contacto' %}">Contacto</a></li>
+            </ul>
+        </nav>
+        <div class ="auth-buttons">
+            {% if user.is_authenticated %}
+                {% if user.is_superuser %}
+                    <form action="{% url 'admin:index' %}">
+                        <button type='submit' class="btn btn-register">Administrar</button>
+                    </form>
+                {% endif %}
+                <form action="{% url 'logout' %}">
+                    <button type='submit' class="btn btn-login">Cerrar Sesión</button>
+                </form>
+            {% else %}
+                <form action="{% url 'login' %}">
+                    <button type='submit' class="btn btn-login">Iniciar Sesión</button>
+                </form>
+                <form action="{% url 'registrar' %}">
+                    <button type='submit' class="btn btn-register">Registrarse</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+</header>
+
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/cant_jugadores.css' %}">
+
+{% block content %}
+<br>
+<br>
+<br>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h2>Ingresa los Nombres de los Jugadores</h2>
+            <form method="post">
+                {% csrf_token %}
+                {% for i in jugadores_range %}
+                    <div class="form-group">
+                        <label for="jugador{{ i }}">Jugador {{ i }}:</label>
+                        <input type="text" name="jugador{{ i }}" class="form-control" required placeholder="ej: Carlitos">
+                    </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-primary">Guardar Jugadores</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

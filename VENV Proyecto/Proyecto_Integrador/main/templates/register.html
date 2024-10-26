@@ -1,0 +1,29 @@
+{% extends 'index.html' %}
+    <title>{% block title %}Strike Zone - Registro{% endblock %}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+{%load static%}
+    <link rel="stylesheet" href="../static/css/index.css">
+
+{% block content %}
+<br>
+<br>
+<br>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div >
+                <div >
+                    
+                    <h2>Registrarse</h2>
+                    <form  method="post">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <button type="submit" class="btn btn-login">Ingresar</button>
+                    </form>
+                    <p class="forgot-password"><a href="{% url 'login' %}">¿Ya tenes Cuenta?</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
