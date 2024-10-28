@@ -82,8 +82,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'Grupo_4_bowling',   
-        'USER': 'valenzzabala',
-        'PASSWORD': 'Valentin348?',
+        'USER': 'admin',
+        'PASSWORD': 'TPI-6to-bowling'',
         'HOST': 'localhost',
         'PORT': '3306',
     }
