@@ -72,7 +72,7 @@ Asegúrate de tener instalados los siguientes componentes en tu sistema:
 2. **Configura el entorno virtual**:
    Navega al directorio del proyecto y ejecuta:
    ```bash
-   pipenv install --three
+   pipenv shell
    ```
 
 3. **Instala las dependencias**:
