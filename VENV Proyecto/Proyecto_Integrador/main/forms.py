@@ -5,13 +5,24 @@ from .models import Cliente
 from django.contrib.auth.hashers import make_password 
 from .utils import comprobar_disponibilidad_pistas 
 
+from django import forms
+from .models import Reserva, EstadoReserva, PistaBowling
 
-
-
-
-
-
+from django import forms
+from .models import Reserva, PistaBowling
+from django.core.exceptions import ValidationError
+from django.utils import timezone
 from django.contrib.auth.forms import AuthenticationForm
+from django import forms
+
+from django import forms
+from .models import Pedido, Producto, PedidoXProducto
+
+from django import forms
+from .models import Pedido, Producto
+
+from django import forms
+from .models import Producto
 
 
 
@@ -50,10 +61,7 @@ class CustomRegisterForm(forms.ModelForm):
         return user
     
     
-from django import forms
-from .models import Reserva, PistaBowling
-from django.core.exceptions import ValidationError
-from django.utils import timezone
+
 
 class ReservaForm(forms.ModelForm):
     fecha_hora_reserva = forms.DateTimeField(
@@ -99,7 +107,7 @@ class ReservaForm(forms.ModelForm):
                 raise forms.ValidationError('El correo electrónico del cliente no existe')
 
 
-from django import forms
+
 
 class JugadoresForm(forms.Form):
     cantidad_jugadores = forms.IntegerField(
@@ -111,22 +119,14 @@ class JugadoresForm(forms.Form):
     
     
     
-from django import forms
-from .models import Pedido, Producto, PedidoXProducto
 
-from django import forms
-from .models import Pedido, Producto
-
-from django import forms
-from .models import Producto
 
 class MultiplePedidoForm(forms.Form):
     producto = forms.ModelChoiceField(queryset=Producto.objects.all(), label='Producto')
     cantidad = forms.IntegerField(min_value=1, required=True, label='Cantidad')
 
 
-from django import forms
-from .models import Reserva, EstadoReserva, PistaBowling
+
 
 class ReservaEditForm(forms.ModelForm):
     nuevo_estado = forms.ModelChoiceField(

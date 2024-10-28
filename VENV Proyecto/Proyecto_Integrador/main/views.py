@@ -10,7 +10,7 @@ from django.shortcuts import render
 
 from django.views.generic import TemplateView
 from django.urls import reverse_lazy
-from django.views.generic.edit import FormView
+
 from .forms import  CustomLoginForm
 from django.views.generic import ListView
 from .models import *
@@ -21,7 +21,18 @@ from django.contrib.auth import logout
 from django.urls import reverse
 from datetime import datetime, timedelta
 
-# views.py
+
+from django.shortcuts import render, redirect
+from .forms import ReservaForm
+
+from django.views.generic import CreateView
+import logging
+
+from django.http import JsonResponse
+
+
+from django.shortcuts import render
+
 from django.views.generic import View
 from django.shortcuts import render, redirect
 from .forms import JugadoresForm
@@ -40,19 +51,94 @@ from django.shortcuts import get_object_or_404
 from django.views.generic import ListView
 from .models import Reserva, HistorialEstado
 
-from django.contrib.auth.decorators import login_required
+
 from django.shortcuts import redirect
 
 from django.utils import timezone
 from datetime import timedelta
+
+from django.http import JsonResponse
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.views.generic import TemplateView
+from .models import Partida, Jugador, Tirada, Turno
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.views.generic import TemplateView
+from .models import Partida, Jugador, Tirada, Turno
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.views.generic import TemplateView
+from django.contrib import messages
+from .models import Partida, Jugador, Tirada, Turno, EstadoPartida
+
+from django.views.generic.edit import UpdateView
+from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
+from django.urls import reverse_lazy
+from .models import Reserva, EstadoReserva, HistorialEstado
+from .forms import ReservaEditForm
+from django.contrib import messages
+from django.utils import timezone
+
+from django.views.generic import ListView
+from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
+from .models import Reserva, HistorialEstado
 
 
 from django.views.generic import CreateView
 from django.urls import reverse_lazy
 from .forms import CustomRegisterForm
 
-from django.db.models import Sum, F
+from django.views.generic import TemplateView   
 
+from .models import Reserva, Pedido, PedidoXProducto, Producto, HistorialEstado, Partida, EstadoPartida, Jugador
+
+from django.views.generic import TemplateView
+
+from .models import Reserva, Pedido, PedidoXProducto, Producto, HistorialEstado, Partida, EstadoPartida, Jugador
+
+from django.views.generic import TemplateView
+from django.shortcuts import get_object_or_404
+
+from .models import Reserva, Pedido, PedidoXProducto, Producto, HistorialEstado, Partida, EstadoPartida, Jugador
+
+from django.views.generic import TemplateView
+from django.shortcuts import get_object_or_404
+
+from .models import Reserva, Pedido, PedidoXProducto, Producto, HistorialEstado, Partida, EstadoPartida, Jugador, EstadoReserva
+
+from django.views.generic import TemplateView
+from django.shortcuts import get_object_or_404
+
+from .models import Reserva, Pedido, PedidoXProducto, Producto, HistorialEstado, Partida, EstadoPartida, Jugador, EstadoReserva
+
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.views import View
+from .models import Partida, Jugador, Turno, EstadoPartida
+
+
+from django.views import View
+from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
+from .models import Reserva, Pedido, PedidoXProducto, Producto
+
+from django.utils import timezone
+
+from django.views import View
+from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
+from .models import Reserva, Pedido, PedidoXProducto, Producto, EstadoPedido
+
+from django.utils import timezone
+
+from django.views import View
+from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
+from .models import Reserva, Pedido, PedidoXProducto, EstadoPedido
+from .forms import MultiplePedidoForm
+from django.utils import timezone
 
 #_____________________________________________________
 #_____________ VIEWS__________________________________
@@ -60,9 +146,6 @@ from django.db.models import Sum, F
 
 class IndexView(TemplateView):
     template_name = 'index.html'
-    
-
-
 
 class MisReservasView(ListView):
     model = Reserva
@@ -125,39 +208,14 @@ class MisReservasView(ListView):
                 reserva.save()
 
         return reservas
-    
+
 def cancelar_reserva(request, pk):
     reserva = Reserva.objects.get(pk=pk)
     reserva.delete()
     return redirect('misreservas')
-    
+
 class ContactoView(TemplateView):
     template_name = 'contacto.html'
-    
-from django.views.generic import TemplateView   
-from django.db.models import Sum
-from .models import Reserva, Pedido, PedidoXProducto, Producto, HistorialEstado, Partida, EstadoPartida, Jugador
-
-from django.views.generic import TemplateView
-from django.db.models import Sum
-from .models import Reserva, Pedido, PedidoXProducto, Producto, HistorialEstado, Partida, EstadoPartida, Jugador
-
-from django.views.generic import TemplateView
-from django.shortcuts import get_object_or_404
-from django.db.models import Sum
-from .models import Reserva, Pedido, PedidoXProducto, Producto, HistorialEstado, Partida, EstadoPartida, Jugador
-
-from django.views.generic import TemplateView
-from django.shortcuts import get_object_or_404
-from django.db.models import Sum
-from .models import Reserva, Pedido, PedidoXProducto, Producto, HistorialEstado, Partida, EstadoPartida, Jugador, EstadoReserva
-
-from django.views.generic import TemplateView
-from django.shortcuts import get_object_or_404
-from django.db.models import Sum
-from .models import Reserva, Pedido, PedidoXProducto, Producto, HistorialEstado, Partida, EstadoPartida, Jugador, EstadoReserva
-
-from django.db.models import Sum
 
 class mi_reserva(TemplateView):
     template_name = 'menu_partidas_bar.html'
@@ -237,23 +295,6 @@ class mi_reserva(TemplateView):
             context['estado_reserva'] = None
         
         return context
-
-
-
-from django.http import JsonResponse
-
-from django.shortcuts import render, get_object_or_404, redirect
-from django.views.generic import TemplateView
-from .models import Partida, Jugador, Tirada, Turno
-
-from django.shortcuts import render, get_object_or_404, redirect
-from django.views.generic import TemplateView
-from .models import Partida, Jugador, Tirada, Turno
-
-from django.shortcuts import render, get_object_or_404, redirect
-from django.views.generic import TemplateView
-from django.contrib import messages
-from .models import Partida, Jugador, Tirada, Turno, EstadoPartida
 
 class TablaView(TemplateView):
     template_name = 'tabla.html'
@@ -352,8 +393,6 @@ class TablaView(TemplateView):
         partida.estado = EstadoPartida.objects.get(estado='Finalizada')
         partida.save()
 
-
-
 class CustomLoginView(LoginView):
     template_name = 'login.html'
     authentication_form = CustomLoginForm
@@ -367,28 +406,10 @@ class CustomRegisterView(CreateView):
         response = super().form_valid(form)
         form.save()
         return response
-    
+
 def custom_logout_view(request):
     logout(request)
     return redirect('/')
-    
-
-
-# TODO: REVISAR
-from django.shortcuts import render, redirect
-from .forms import ReservaForm
-from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
-from django.views.generic import CreateView
-import logging
-
-from django.http import JsonResponse
-
-
-from django.shortcuts import render
-
-
-
 
 class ReservaView(CreateView):
     model = Reserva
@@ -409,8 +430,6 @@ class ReservaView(CreateView):
         reserva.id_pista = pista
         reserva.save()
         return super().form_valid(form)
-    
-
 
 class JugadoresView(View):
     def get(self, request, partida_id, reserva_id):
@@ -432,10 +451,6 @@ class JugadoresView(View):
 
             return redirect('nombres_jugadores', partida_id=partida_id, reserva_id=reserva_id)  # Redirige a la vista de nombres de jugadores
         return redirect('jugadores', partida_id=partida_id, reserva_id=reserva_id)  # Redirigir si no hay cantidad válida
-
-from django.shortcuts import render, get_object_or_404, redirect
-from django.views import View
-from .models import Partida, Jugador, Turno, EstadoPartida
 
 class NombresJugadoresView(View):
     def get(self, request, partida_id, reserva_id):
@@ -479,34 +494,12 @@ class NombresJugadoresView(View):
 
         return redirect('mi_reserva', reserva_id=reserva_id)
 
-
 def iniciar_partida(request, partida_id):
     partida = get_object_or_404(Partida, id_partida=partida_id)
     
     id_reserva = partida.id_reserva.id_reserva
 
     return redirect('/jugadores/'+str(partida.id_partida)+'/' + str(id_reserva))
-
-from django.views import View
-from django.shortcuts import get_object_or_404
-from django.http import JsonResponse
-from .models import Reserva, Pedido, PedidoXProducto, Producto
-
-from django.utils import timezone
-
-from django.views import View
-from django.shortcuts import get_object_or_404
-from django.http import JsonResponse
-from .models import Reserva, Pedido, PedidoXProducto, Producto, EstadoPedido
-
-from django.utils import timezone
-
-from django.views import View
-from django.shortcuts import get_object_or_404
-from django.http import JsonResponse
-from .models import Reserva, Pedido, PedidoXProducto, EstadoPedido
-from .forms import MultiplePedidoForm
-from django.utils import timezone
 
 class AgregarPedidoView(View):
     def post(self, request, reserva_id):
@@ -536,7 +529,6 @@ class AgregarPedidoView(View):
 
         return redirect('mi_reserva', reserva_id)
 
-
 def finalizar_reserva(request, reserva_id):
     if request.method == 'POST':
         reserva = get_object_or_404(Reserva, pk=reserva_id, id_cliente=request.user.id_cliente)
@@ -553,12 +545,6 @@ def finalizar_reserva(request, reserva_id):
         return redirect('mi_reserva', reserva_id=reserva_id)
     
     return redirect('mi_reserva', reserva_id=reserva_id)
-
-
-
-from django.views.generic import ListView
-from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
-from .models import Reserva, HistorialEstado
 
 class VerReservasView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = Reserva
@@ -579,15 +565,6 @@ class VerReservasView(LoginRequiredMixin, UserPassesTestMixin, ListView):
             except HistorialEstado.DoesNotExist:
                 reserva.ultimo_estado = None
         return context
-
-
-from django.views.generic.edit import UpdateView
-from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
-from django.urls import reverse_lazy
-from .models import Reserva, EstadoReserva, HistorialEstado
-from .forms import ReservaEditForm
-from django.contrib import messages
-from django.utils import timezone
 
 class EditarReservaView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Reserva
@@ -619,6 +596,5 @@ class EditarReservaView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
             messages.success(self.request, 'Reserva actualizada exitosamente.')
         
         return super().form_valid(form)
-    
-    
+
 

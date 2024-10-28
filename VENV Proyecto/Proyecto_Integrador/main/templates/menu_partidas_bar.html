@@ -97,7 +97,7 @@
                 <p>Partida {{ forloop.counter }} - {{ partida.estado.estado }}</p>
                 {% if partida.estado.estado == 'Disponible' and estado_reserva == 'En curso' %}
                     <a href="{% url 'iniciar_partida' partida.id_partida %}" class="btn btn-success">Iniciar</a>
-                {% elif partida.estado.estado == 'En proceso' %}
+                {% elif partida.estado.estado == 'En proceso' and estado_reserva == 'En curso' %}
                     <a href="{% url 'tabla' partida.id_partida %}" class="btn btn-primary">Jugar</a>
                 {% elif partida.estado.estado == 'Finalizada' %}
                     <p>Ganador: {{ partida.ganador.nombre_jugador }}</p>
@@ -160,6 +160,7 @@
     </section>
 
     {% if estado_reserva == 'En curso' %}
+    <br><br>
         <form id="formFinalizarReserva" method="post" action="{% url 'finalizar_reserva' reserva.id_reserva %}">
             {% csrf_token %}
             <button type="submit" class="btn btn-danger">Finalizar</button>

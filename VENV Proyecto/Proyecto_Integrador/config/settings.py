@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     
     
-    #Mi app, donde estan los models
+    
     'main',
 ]
 
@@ -82,10 +82,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'Grupo_4_bowling',   
-        'USER': 'carlitos',             
-        'PASSWORD': '#LAgolda2007',      
-        'HOST': 'localhost',                    
-        'PORT': '3306',                         
+        'USER': 'admin',
+        'PASSWORD': 'TPI-6to-bowling',
+        'HOST': 'localhost',
+        'PORT': '3306',
     }
 }
 
