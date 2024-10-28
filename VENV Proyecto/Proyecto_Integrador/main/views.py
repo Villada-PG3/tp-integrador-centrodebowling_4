@@ -541,7 +541,7 @@ def finalizar_reserva(request, reserva_id):
             fecha_hora_fin=timezone.now()
         )
         
-        messages.success(request, 'Reserva finalizada exitosamente.')
+        messages.success(request, 'Reserva finalizada exitósamente.')
         return redirect('mi_reserva', reserva_id=reserva_id)
     
     return redirect('mi_reserva', reserva_id=reserva_id)
