@@ -83,7 +83,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'Grupo_4_bowling',   
         'USER': 'admin',
-        'PASSWORD': 'TPI-6to-bowling'',
+        'PASSWORD': 'TPI-6to-bowling',
         'HOST': 'localhost',
         'PORT': '3306',
     }
