@@ -535,3 +535,90 @@ class AgregarPedidoView(View):
             )
 
         return redirect('mi_reserva', reserva_id)
+
+
+def finalizar_reserva(request, reserva_id):
+    if request.method == 'POST':
+        reserva = get_object_or_404(Reserva, pk=reserva_id, id_cliente=request.user.id_cliente)
+        estado_finalizada = EstadoReserva.objects.get(estado='Finalizada')
+        
+        HistorialEstado.objects.create(
+            id_reserva=reserva,
+            estado=estado_finalizada,
+            fecha_hora_inicio=timezone.now(),
+            fecha_hora_fin=timezone.now()
+        )
+        
+        messages.success(request, 'Reserva finalizada exitosamente.')
+        return redirect('mi_reserva', reserva_id=reserva_id)
+    
+    return redirect('mi_reserva', reserva_id=reserva_id)
+
+
+
+from django.views.generic import ListView
+from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
+from .models import Reserva, HistorialEstado
+
+class VerReservasView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    model = Reserva
+    template_name = 'ver.html'
+    context_object_name = 'reservas'
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get_queryset(self):
+        return Reserva.objects.all().order_by('-fecha_hora_reserva')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        for reserva in context['reservas']:
+            try:
+                reserva.ultimo_estado = reserva.historialestado_set.latest('fecha_hora_inicio')
+            except HistorialEstado.DoesNotExist:
+                reserva.ultimo_estado = None
+        return context
+
+
+from django.views.generic.edit import UpdateView
+from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
+from django.urls import reverse_lazy
+from .models import Reserva, EstadoReserva, HistorialEstado
+from .forms import ReservaEditForm
+from django.contrib import messages
+from django.utils import timezone
+
+class EditarReservaView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Reserva
+    form_class = ReservaEditForm
+    template_name = 'editar_reserva.html'
+    success_url = reverse_lazy('ver_reservas')
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['estados'] = EstadoReserva.objects.all()
+        return context
+
+    def form_valid(self, form):
+        reserva = form.save(commit=False)
+        nuevo_estado = form.cleaned_data.get('nuevo_estado')
+        
+        if nuevo_estado:
+            HistorialEstado.objects.create(
+                id_reserva=reserva,
+                estado=nuevo_estado,
+                fecha_hora_inicio=timezone.now(),
+                fecha_hora_fin=reserva.fecha_hora_reserva
+            )
+            messages.success(self.request, f'Reserva actualizada y estado cambiado a {nuevo_estado}.')
+        else:
+            messages.success(self.request, 'Reserva actualizada exitosamente.')
+        
+        return super().form_valid(form)
+    
+    
+

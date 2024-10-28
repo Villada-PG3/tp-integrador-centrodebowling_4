@@ -45,6 +45,9 @@
                     <form action="{% url 'admin:index' %}">
                         <button type='submit' class="btn btn-register"  >Administrar</button>
                     </form>
+                    <form action="{% url 'ver_reservas' %}">
+                        <button type='submit' class="btn btn-primary">Ver Reservas</button>
+                    </form>
                 {% endif %}
                 <form action="{% url 'logout' %}">
                     <button type='submit' class="btn btn-login"  >Cerrar Sesión</button>
@@ -79,29 +82,7 @@
                 </div>
             </section>
         
-            <section class="bowling-experience">
-                <div class="experience-item">
-                    <img src="https://picsum.photos/1350/900?random=1" alt="Pistas de bowling iluminadas">
-                    <div class="experience-text">
-                        <h2>Pistas Modernas</h2>
-                        <p>Disfruta de nuestras pistas con la última tecnología e iluminación LED.</p>
-                    </div>
-                </div>
-                <div class="experience-item">
-                    <img src="https://picsum.photos/1350/900?random=2" alt="Grupo de amigos jugando bowling">
-                    <div class="experience-text">
-                        <h2>Diversión Garantizada</h2>
-                        <p>Comparte momentos inolvidables con amigos y familia en nuestro centro.</p>
-                    </div>
-                </div>
-                <div class="experience-item">
-                    <img src="https://picsum.photos/1350/900?random=3" alt="Bar y zona de descanso">
-                    <div class="experience-text">
-                        <h2>Área de Relax</h2>
-                        <p>Disfruta de nuestro bar y zona de descanso entre partidas.</p>
-                    </div>
-                </div>
-            </section>
+            
         
             <section class="features">
                 <div class="features-container">

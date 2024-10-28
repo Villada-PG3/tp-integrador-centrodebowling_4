@@ -36,6 +36,9 @@
                 <form action="{% url 'admin:index' %}">
                     <button type='submit' class="btn btn-register"  >Administrar</button>
                 </form>
+                <form action="{% url 'ver_reservas' %}">
+                    <button type='submit' class="btn btn-primary">Ver Reservas</button>
+                </form>
             {% endif %}
             <form action="{% url 'logout' %}">
                 <button type='submit' class="btn btn-login"  >Cerrar Sesión</button>
@@ -130,26 +133,38 @@
         </div>
         
         <!-- Formulario para agregar nuevos pedidos -->
-        <form id="formAgregarPedido" method="post" action="{% url 'agregar_pedido' reserva.id_reserva %}">
-            {% csrf_token %}
-            <div id="pedidoContainer">
-                <div class="pedidoItem">
-                    <select name="producto" required>
-                        {% for producto in productos %}
-                            <option value="{{ producto.id_producto }}">{{ producto.nombre }}</option>
-                        {% endfor %}
-                    </select>
-                    
-                    <input type="number" name="cantidad" min="1" required placeholder="Cantidad">
-                    
-                    <button type="button" class="btn btn-danger removePedido">Eliminar</button>
+        {% if estado_reserva == 'En curso' %}
+            <form id="formAgregarPedido" method="post" action="{% url 'agregar_pedido' reserva.id_reserva %}">
+                {% csrf_token %}
+                <div id="pedidoContainer">
+                    <div class="pedidoItem">
+                        <select name="producto" required>
+                            {% for producto in productos %}
+                                <option value="{{ producto.id_producto }}">{{ producto.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                        
+                        <input type="number" name="cantidad" min="1" required placeholder="Cantidad">
+                        
+                        <button type="button" class="btn btn-danger removePedido">Eliminar</button>
+                    </div>
                 </div>
-            </div>
-            <br><br>
-            <button type="button" id="addPedido" class="btn btn-secondary">Agregar Otro Producto</button>
-            <button type="submit" class="btn btn-primary">Agregar Pedidos</button>
-        </form>
+                <br><br>
+                <button type="button" id="addPedido" class="btn btn-secondary">Agregar Otro Producto</button>
+                <button type="submit" class="btn btn-primary">Agregar Pedidos</button>
+            </form>
+        {% else %}
+            <p>No puedes realizar pedidos</p>
+        {% endif %}
+
     </section>
+
+    {% if estado_reserva == 'En curso' %}
+        <form id="formFinalizarReserva" method="post" action="{% url 'finalizar_reserva' reserva.id_reserva %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Finalizar</button>
+        </form>
+    {% endif %}
 
     {% endblock %}
     

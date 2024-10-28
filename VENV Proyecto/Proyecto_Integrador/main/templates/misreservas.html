@@ -35,6 +35,9 @@
                 <form action="{% url 'admin:index' %}">
                     <button type='submit' class="btn btn-register"  >Administrar</button>
                 </form>
+                <form action="{% url 'ver_reservas' %}">
+                    <button type='submit' class="btn btn-primary">Ver Reservas</button>
+                </form>
             {% endif %}
             <form action="{% url 'logout' %}">
                 <button type='submit' class="btn btn-login"  >Cerrar Sesión</button>
@@ -85,13 +88,19 @@
                     </div>
                 </div>
                 <div class="reservation-actions">
-                    <form action="{% url 'mi_reserva' reserva.id_reserva %}">
-                        <button class="action-btn btn-modify">Ver</button>
-                    </form>
-                    {% if reserva.id_reserva %}
-                        <form action="{% url 'cancelar_reserva' reserva.id_reserva %}" method="post">
-                            {% csrf_token %}
-                            <button class="action-btn btn-cancel">Cancelar</button>
+                    {% if reserva.ultimo_estado.estado.estado == 'Confirmada' %}
+                        <form action="{% url 'mi_reserva' reserva.id_reserva %}">
+                            <button class="action-btn btn-modify">Ver</button>
+                        </form>
+                        {% if reserva.id_reserva %}
+                            <form action="{% url 'cancelar_reserva' reserva.id_reserva %}" method="post">
+                                {% csrf_token %}
+                                <button class="action-btn btn-cancel">Cancelar</button>
+                            </form>
+                        {% endif %}
+                    {% else %}
+                        <form action="{% url 'mi_reserva' reserva.id_reserva %}">
+                            <button class="action-btn btn-modify">Ver</button>
                         </form>
                     {% endif %}
                 </div>

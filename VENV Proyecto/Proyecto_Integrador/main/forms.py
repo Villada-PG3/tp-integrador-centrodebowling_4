@@ -124,3 +124,25 @@ class MultiplePedidoForm(forms.Form):
     producto = forms.ModelChoiceField(queryset=Producto.objects.all(), label='Producto')
     cantidad = forms.IntegerField(min_value=1, required=True, label='Cantidad')
 
+
+from django import forms
+from .models import Reserva, EstadoReserva, PistaBowling
+
+class ReservaEditForm(forms.ModelForm):
+    nuevo_estado = forms.ModelChoiceField(
+        queryset=EstadoReserva.objects.all(),
+        required=False,
+        label="Nuevo Estado"
+    )
+    
+    class Meta:
+        model = Reserva
+        fields = ['id_cliente', 'id_pista', 'fecha_hora_reserva', 'fecha_hora_fin']
+        widgets = {
+            'fecha_hora_reserva': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'fecha_hora_fin': forms.TimeInput(attrs={'type': 'time'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['id_pista'].queryset = PistaBowling.objects.all()

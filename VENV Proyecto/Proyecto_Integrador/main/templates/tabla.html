@@ -20,6 +20,9 @@
                     <form action="{% url 'admin:index' %}">
                         <button type='submit' class="btn btn-register">Administrar</button>
                     </form>
+                    <form action="{% url 'ver_reservas' %}">
+                        <button type='submit' class="btn btn-primary">Ver Reservas</button>
+                    </form>
                 {% endif %}
                 <form action="{% url 'logout' %}">
                     <button type='submit' class="btn btn-login">Cerrar Sesión</button>
