@@ -70,16 +70,13 @@ Asegúrate de tener instalados los siguientes componentes en tu sistema:
    ```
 
 2. **Configura el entorno virtual**:
-   Navega al directorio del proyecto y ejecuta:
+   Navega al directorio **VENV + DJANGO** y ejecuta:
    ```bash
-   pipenv shell
+   pipenv install
    ```
+   Esto  creará un entorno virtual y lo configurará con las dependencias especificadas.
 
-3. **Instala las dependencias**:
-   ```bash
-   pipenv install -r requirements.txt
-   ```
-4. **Activacion**: Cada vez que quieras activar el entorno virtual,navega hasta la carpeta donde se encuentre el venv y  ejecuta:
+3. **Activacion**: Cada vez que quieras activar el entorno virtual,navega hasta la carpeta donde se encuentre el venv y  ejecuta:
    ```bash
    pipenv shell
    ```
