@@ -16,7 +16,7 @@
 3. [Requisitos Previos](#requisitos-previos)
 4. [Guía de Instalación](#guía-de-instalación)
 5. [Configuración de la Base de Datos](#configuración-de-la-base-de-datos)
-6. [Ejecutar la Aplicación](#ejecutar-la-aplicación)
+6. [Ejecutar la Aplicación](#configura-y-ejecuta-la-aplicación)
 
 ---
 
@@ -57,7 +57,13 @@ Asegúrate de tener instalados los siguientes componentes en tu sistema:
 - Python 3.8+
 - Pip
 - MySQL Server
-- Pipenv (`pip install pipenv`)
+- **Pipenv (`pip install pipenv`)**
+
+- **Para evitar futuros conflictos**
+   ```bash 
+      sudo apt update
+      sudo apt upgrade
+   ```
 
 ---
 
@@ -85,6 +91,39 @@ Asegúrate de tener instalados los siguientes componentes en tu sistema:
 ---
 
 ## Configuración de la Base de Datos
+
+
+
+## Iniciar MySQL y Crear el Usuario
+
+1. **Abre la terminal o símbolo del sistema**.
+
+2. **Accede a MySQL como usuario root**:
+   Cuando instalaste MySQL, debiste haber configurado una contraseña para el usuario `root`. Usa esa contraseña para acceder.
+
+   ```bash
+   mysql -u root -p
+    ```
+
+3. **Después de ejecutar este comando, se te pedirá que ingreses la contraseña de root:**
+
+    Crea el usuario y otorga privilegios: Una vez dentro de MySQL, ejecuta los siguientes comandos uno por uno para crear el usuario y otorgarle los permisos necesarios sobre la base de datos Grupo_4_bowling:
+
+    ```sql
+    CREATE DATABASE IF NOT EXISTS Grupo_4_bowling;
+    CREATE USER 'admin'@'localhost' IDENTIFIED BY 'TPI-6to-bowling';
+    GRANT ALL PRIVILEGES ON Grupo_4_bowling.* TO 'admin'@'localhost';
+    FLUSH PRIVILEGES;
+    ```
+
+4. **Salir de MySQL: Cuando hayas terminado, escribe exit para salir de MySQL.**
+
+    ```sql
+        exit
+    ```
+
+
+---
 
 ## Importar Datos al Iniciar el Proyecto
 
@@ -136,7 +175,3 @@ Django cargará los datos especificados en la base de datos del proyecto.
 
    La aplicación estará disponible en [http://localhost:8000](http://localhost:8000).
 ---
-
-
-
-
