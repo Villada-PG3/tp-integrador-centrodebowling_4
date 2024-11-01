@@ -86,45 +86,35 @@ Asegúrate de tener instalados los siguientes componentes en tu sistema:
 
 ## Configuración de la Base de Datos
 
-## Iniciar MySQL y Crear el Usuario
+## Importar Datos al Iniciar el Proyecto
 
-1. **Abre la terminal o símbolo del sistema**.
+Navega primero al directorio del proyecto Django 
 
-2. **Accede a MySQL como usuario root**:
-   Cuando instalaste MySQL, debiste haber configurado una contraseña para el usuario `root`. Usa esa contraseña para acceder.
+```bash
+cd VENV\ +\ DJANGO/Proyecto_Integrador/
+```
 
-   ```bash
-   mysql -u root -p
-    ```
+Para que los datos se carguen automáticamente, puedes añadir el siguiente comando en tu script de inicialización o en la documentación para ejecutarlo al iniciar el proyecto:
 
-3. **Después de ejecutar este comando, se te pedirá que ingreses la contraseña de root:**
+```bash
+python manage.py loaddata database.json
+```
 
-    Crea el usuario y otorga privilegios: Una vez dentro de MySQL, ejecuta los siguientes comandos uno por uno para crear el usuario y otorgarle los permisos necesarios sobre la base de datos Grupo_4_bowling:
-
-    ```sql
-    CREATE USER 'admin'@'localhost' IDENTIFIED BY 'TPI-6to-bowling';
-    GRANT ALL PRIVILEGES ON Grupo_4_bowling.* TO 'admin'@'localhost';
-    FLUSH PRIVILEGES;
-    ```
-
-4. **Salir de MySQL: Cuando hayas terminado, escribe exit para salir de MySQL.**
-
-    ```sql
-        exit
-    ```
+Django cargará los datos especificados en la base de datos del proyecto.
 
 
 ---
 
 ## Configura y ejecuta la Aplicación
 
-1. **Comenzamos creando un SuperUsuario**:
+1. **Datos del Usuario Administrador**:
 
-   ```bash
-   python manage.py createsuperuser
+   ```python
+   email: grupo4@admin.com
+   password: admin
    ```
 
-   Luego te va a pedir un nombre de **usuario**, **mail** y **password**. Es importante que recuerdes el email y password  para poder iniciar sesion como Administrador luego en la Aplicacion.
+   Es importante que recuerdes el email y password  para poder iniciar sesion como Administrador luego en la Aplicacion.
 
 
 1. **Aplica las migraciones**:
@@ -134,67 +124,7 @@ Asegúrate de tener instalados los siguientes componentes en tu sistema:
    python manage.py migrate
    ```
 
-2. **Vamos a generar los Registros en la base de datos**
-    primero nos loggeamos en sql con el usuario **admin** que creamos anteriormente
 
-    ```bash
-        mysql -u admin -p
-    ```
-
-    colocamos la **password** de antes, y despues copiamos y pegamos este codigo para poder generar todos los registros ncesarios:
-
-    ```sql
-    
-    INSERT INTO main_estadopartida (estado, descripcion) VALUES
-    ('Bloqueada', 'Debes Jugar las partidas anteriores antes de poder iniciar esta.'),
-    ('Cancelada', 'La partida tuvo que ser cancelada.'),
-    ('Disponible', 'Partida reservada con exito, pero aun no ha comenzado.'),
-    ('En proceso', 'La partida se esta jugando ahora mismo.'),
-    ('Finalizada', 'La partida termino con exito, dando a un ganador.'),
-    ('Pausada', 'La partida fue pausada por algun motivo.');
-
-    
-    INSERT INTO main_estadopedido (estado, descripcion) VALUES
-    ('Cancelado', 'Tu pedido tuvo que ser cancelado :('),
-    ('En proceso', 'Estan preparando tu pedido'),
-    ('Entregado', 'Ya lo podes disfrutar'),
-    ('Pedido Confirmado', 'El pedido ya llego a la cocina y lo estan por preparar.'),
-    ('Terminado', 'Lo estan por llevar a tu mesa');
-
-    
-    INSERT INTO main_estadopista (estado, descripcion) VALUES
-    ('Disponible', 'La pista esta lista para poder ser usada'),
-    ('Mantenimiento', 'Estamos arreglando/limpiando la pista, estara lista pronto!');
-
-    
-    INSERT INTO main_estadoreserva (estado, descripcion) VALUES
-    ('Cancelada', 'Tu reserva fue cancelada :('),
-    ('Confirmada', 'Reserva confirmada con exito, te esperamos pronto!'),
-    ('En curso', 'Ya es el dia y la hora de tu reserva, a jugar!!'),
-    ('Finalizada', 'Gracias por venir a Strike Zone, los esperamos pronto');
-
-    
-    INSERT INTO main_historialestado (fecha_hora_inicio, fecha_hora_fin, estado_id, id_reserva_id) VALUES
-    ('2024-10-28 11:21:23.938141', '2024-10-28 08:21:00.000000', 'Confirmada', 134),
-    ('2024-10-28 11:21:23.975564', '2024-10-28 13:21:23.975564', 'En curso', 134),
-    ('2024-10-28 11:25:48.648161', '2024-10-28 11:25:48.648182', 'Finalizada', 134);
-
-    
-    INSERT INTO main_producto (nombre, descripcion, precio) VALUES
-    ('Nachos con Cheddar', 'un clasico Mexicano', 2000),
-    ('Hamburguesa', 'La clasica de la casa', 3000),
-    ('Coca Cola', 'Refrescante', 1000);
-
-    
-    INSERT INTO main_pistabowling (capacidad_maxima, descripcion, estado_id) VALUES
-    (10, 'Pista 1', 'Disponible'),
-    (10, 'Pista 2', 'Disponible'),
-    (10, 'Pista 3', 'Disponible'),
-    (10, 'Pista 4', 'Disponible'),
-    (10, 'Pista 5', 'Disponible'),
-    (10, 'Pista 6', 'Disponible'),
-    (10, 'Pista 7', 'Disponible');
-    ```
 
 2. **Ejecuta el servidor**:
 
