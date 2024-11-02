@@ -259,18 +259,21 @@ JAZZMIN_SETTINGS = {
     
    
 }
-
 JAZZMIN_UI_TWEAKS = {
+    "theme":"darkly",
     "navbar_small_text": False,
     "footer_small_text": False,
     "body_small_text": False,
     "brand_small_text": False,
-    "brand_colour": "blue",  # Cambia a azul
-    "accent": "blue",  # Cambia a azul
-    "navbar": "navbar-dark",
+    "brand_colour": "black",
+    "accent": "blue",
+    "navbar": "navbar-dark bg-dark",
     "no_navbar_border": False,
     "navbar_fixed": False,
     "layout_boxed": False,
     "footer_fixed": False,
-    "sidebar_fixed": False
+    "sidebar_fixed": False,
+    "footer": "bg-dark",
+    "body": "bg-dark",
+    "text_color": "blue",
 }
