@@ -136,6 +136,13 @@ cd VENV\ +\ DJANGO/Proyecto_Integrador/
 Para que los datos se carguen automáticamente, puedes añadir el siguiente comando en tu script de inicialización o en la documentación para ejecutarlo al iniciar el proyecto:
 
 ```bash
+   python manage.py makemigrations
+   python manage.py migrate
+   ```
+Django aplicara las migraciones de datos
+
+
+```bash
 python manage.py loaddata database.json
 ```
 
@@ -156,16 +163,7 @@ Django cargará los datos especificados en la base de datos del proyecto.
    Es importante que recuerdes el email y password  para poder iniciar sesion como Administrador luego en la Aplicacion.
 
 
-1. **Aplica las migraciones**:
-
-   ```bash
-   python manage.py makemigrations
-   python manage.py migrate
-   ```
-
-
-
-2. **Ejecuta el servidor**:
+1. **Ejecuta el servidor**:
 
    ```bash
    python manage.py runserver
