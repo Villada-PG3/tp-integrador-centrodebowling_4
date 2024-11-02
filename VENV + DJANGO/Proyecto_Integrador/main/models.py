@@ -49,7 +49,7 @@ class Cliente(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ['nombre']
 
     def __str__(self):
-        return self.email
+        return (f"Email: {self.email} - Nombre: {self.nombre}")
 
 
 
@@ -75,7 +75,7 @@ class Reserva(models.Model):
     
 
     def __str__(self):
-        return str(self.id_reserva)
+        return (f"ID: {self.id_reserva} - {self.id_cliente} - Id Pista:{self.id_pista}")
     
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -167,7 +167,7 @@ class Pedido(models.Model):
     id_reserva = models.ForeignKey('Reserva',on_delete=models.CASCADE, default=1)
 
     def __str__(self):
-        return str(self.id_pedido)
+        return str(f"ID: {self.id_pedido} - Estado: {self.estado}")
 
 
 class EstadoPedido(models.Model):
@@ -197,7 +197,7 @@ class Producto(models.Model):
     precio = models.IntegerField()
 
     def __str__(self):
-        return str(self.id_producto)
+        return str(f"{self.id_producto} - {self.nombre}")
 
 
 class HistorialEstado(models.Model):
