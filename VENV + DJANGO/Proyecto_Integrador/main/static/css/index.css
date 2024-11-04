@@ -9,11 +9,12 @@
         body {
             font-family: 'Poppins', sans-serif;
             line-height: 1.6;
-            color: #333;
+           color: #ff6600; 
             overflow-x: hidden;
         }
+        
         header {
-            background-color: rgba(255, 255, 255, 0.95);
+            background-color: rgba(44, 42, 43, 0.1);
             -webkit-backdrop-filter: blur(10px);
             backdrop-filter: blur(10px);
             padding: 1rem 0;
@@ -27,31 +28,43 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
+            padding: 0 30px;
+            width: 100%;
         }
         .logo {
-            color: #ff6600;
+            color: #ffffff;
             font-size: 1.8rem;
             font-weight: bold;
             text-decoration: none;
             letter-spacing: 1px;
+            transition: 0.3s;
+            text-decoration: none;
+        }
+        .logo:hover{
+            color: #ff6600;
+            text-decoration: none;
+        }
+        nav{
+            margin-left: 20px;
+            color: whitesmoke;
+
         }
         .nav-menu {
             display: flex;
-            list-style-type: none;
-            
+            padding-left: 20px 0px 5px 0px;
+            margin-left: 20px;
         }
         .nav-menu li {
             margin-left: 30px;
+            
         }
         .nav-menu a {
-            color: #333;
+            color: white;
             text-decoration: none;
             font-size: 1rem;
             font-weight: 500;
             transition: color 0.3s ease;
+            
         }
         .nav-menu a:hover {
             color: #ff6600;
@@ -59,6 +72,7 @@
         .auth-buttons {
             display: flex;
             gap: 15px;
+            margin-left: auto;
         }
         .btn {
             padding: 8px 16px;
@@ -69,21 +83,26 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
+
         .btn-login {
             background-color: transparent;
             color: #ff6600;
             border: 2px solid #ff6600;
         }
+
         .btn-register {
             background-color: #ff6600;
             color: white;
+            margin-left: auto
         }
+
         .btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            color: white;
         }
         .hero {
-            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('/static/img/bg.jpg') no-repeat center center/cover;
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('/static/img/StrikeZOne.jpeg') no-repeat center center/cover;
             height: 100vh;
             display: flex;
             align-items: center;
@@ -95,7 +114,7 @@
         .hero-content {
             max-width: 800px;
         }
-        .hero h1 {
+        .hero h1 {  
             font-size: 3.5rem;
             margin-bottom: 20px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
@@ -167,7 +186,7 @@
         }
         .features {
             padding: 80px 20px;
-            background-color: #f8f9fa;
+            background-color: rgb(48, 48, 48);
             margin-top: -1px; 
         }
         .features-container {
@@ -204,7 +223,7 @@
         }
         .testimonials {
             padding: 80px 0;
-            background-color: #f8f9fa;
+            background-color:rgb(48, 48, 48);
         }
         .testimonials-container {
             max-width: 1000px;
@@ -317,4 +336,105 @@
         }
         .forgot-password a:hover {
             text-decoration: underline;
+        }
+
+
+
+
+
+        .reservation-form {
+            color: #000 !important;
+            width: 65%;
+            margin: 40px auto;
+            padding: 30px;
+            border-radius: 23px;
+            background-color: white;
+            box-shadow: 19px 19px 66px #7f7e7e, -19px -19px 66px #6c6c6c;
+        }
+
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        input[type="date"],
+        input[type="time"],
+        select,
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        .btn-submit {
+            background-color: #ff6600;
+            color: white;
+            padding: 12px 24px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .btn-submit:hover {
+            background-color: #e55b00;
+        }
+        .lanes-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .lane {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        
+        
+        
+        .lane.available {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .lane.selected {
+            background-color: #2196F3;
+            color: white;
+        }
+        .lane.unavailable {
+            background-color: #f44336;
+            color: white;
+            cursor: not-allowed;
+        }
+        
+        .unavailable {
+            color: #d9534f; /* Color rojo para el texto */
+            background-color: #f2dede; /* Fondo claro para resaltar el mensaje */
+            border: 1px solid #ebccd1; /* Borde rojo claro */
+            padding: 10px; /* Espaciado interno */
+            border-radius: 5px; /* Bordes redondeados */
+            margin-top: 5px; /* Espaciado superior */
+            font-weight: bold; /* Negrita para destacar el texto */
+        }
+        
+        input[type="radio"]{
+        
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        
         }
