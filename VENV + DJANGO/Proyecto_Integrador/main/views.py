@@ -158,58 +158,61 @@ class MisReservasView(ListView):
 
     def get_queryset(self):
         reservas = Reserva.objects.filter(id_cliente=self.request.user.id_cliente)
-        ahora = timezone.now()  # Obtener la fecha y hora actual
+        ahora = timezone.now()
 
         for reserva in reservas:
-            print(f"Reserva ID: {reserva.id_reserva}, fecha_hora_reserva: {reserva.fecha_hora_reserva}, fecha_hora_fin: {reserva.fecha_hora_fin}")
-            try:
-                reserva.ultimo_estado = reserva.historialestado_set.latest('fecha_hora_inicio')
-            except HistorialEstado.DoesNotExist:
-                reserva.ultimo_estado = None
-
-            # Verificar si la reserva está confirmada
-            estado_default = EstadoReserva.objects.get(estado='Confirmada')
-            if not HistorialEstado.objects.filter(id_reserva=reserva, estado=estado_default).exists():
-                HistorialEstado.objects.create(
-                    id_reserva=reserva,
-                    estado=estado_default,
-                    fecha_hora_inicio=ahora,
-                    fecha_hora_fin=ahora + timedelta(hours=2)  # Guardar como DateTimeField
-                )
-
-            # Verificar el estado actual de la reserva
-            if reserva.fecha_hora_reserva and reserva.fecha_hora_reserva <= ahora:
-                # Cambiar a 'En Curso'
-                estado_en_curso = EstadoReserva.objects.get(estado='En Curso')
-                if reserva.ultimo_estado.estado.estado == 'Confirmada':
-                    HistorialEstado.objects.create(
-                        id_reserva=reserva,
-                        estado=estado_en_curso,
-                        fecha_hora_inicio=ahora,
-                        fecha_hora_fin=ahora + timedelta(hours=2)  # Guardar como DateTimeField
-                    )
-
-            # Verificar si la reserva ha finalizado
-            if reserva.fecha_hora_fin and reserva.fecha_hora_reserva <= ahora and reserva.fecha_hora_fin <= ahora.time():
-                # Cambiar a 'Finalizada'
-                estado_finalizada = EstadoReserva.objects.get(estado='Finalizada')
-                if reserva.ultimo_estado.estado.estado == 'En Curso':
-                    HistorialEstado.objects.create(
-                        id_reserva=reserva,
-                        estado=estado_finalizada,
-                        fecha_hora_inicio=ahora,
-                        fecha_hora_fin=ahora  # Guardar como DateTimeField
-                    )
-
-            # Actualizar la fecha_hora_fin aquí si es necesario
-            if reserva.fecha_hora_reserva:
-                hora_final = reserva.fecha_hora_reserva + timedelta(hours=2)
-                reserva.fecha_hora_fin = hora_final.time()  # Guardar solo la parte de la hora
-                reserva.save()
+            self._procesar_reserva(reserva, ahora)
 
         return reservas
 
-def cancelar_reserva(request, pk):
+    def _procesar_reserva(self, reserva, ahora):
+        self._actualizar_ultimo_estado(reserva)
+        self._verificar_confirmacion(reserva, ahora)
+        self._verificar_estado_actual(reserva, ahora)
+        self._verificar_finalizacion(reserva, ahora)
+        self._actualizar_fecha_hora_fin(reserva)
+
+    def _actualizar_ultimo_estado(self, reserva):
+        
+        try:
+            reserva.ultimo_estado = reserva.historialestado_set.latest('fecha_hora_inicio')
+        except HistorialEstado.DoesNotExist:
+            reserva.ultimo_estado = None
+
+    def _verificar_confirmacion(self, reserva, ahora):
+        estado_default = EstadoReserva.objects.get(estado='Confirmada')
+        if not HistorialEstado.objects.filter(id_reserva=reserva, estado=estado_default).exists():
+            self._crear_historial_estado(reserva, estado_default, ahora, ahora + timedelta(hours=2))
+
+    def _verificar_estado_actual(self, reserva, ahora):
+        if reserva.fecha_hora_reserva and reserva.fecha_hora_reserva <= ahora:
+            estado_en_curso = EstadoReserva.objects.get(estado='En Curso')
+            if reserva.ultimo_estado.estado.estado == 'Confirmada':
+                self._crear_historial_estado(reserva, estado_en_curso, ahora, ahora + timedelta(hours=2))
+
+    def _verificar_finalizacion(self, reserva, ahora):
+        if reserva.fecha_hora_fin and reserva.fecha_hora_reserva <= ahora and reserva.fecha_hora_fin <= ahora.time():
+            estado_finalizada = EstadoReserva.objects.get(estado='Finalizada')
+            if reserva.ultimo_estado.estado.estado == 'En Curso':
+                self._crear_historial_estado(reserva, estado_finalizada, ahora, ahora)
+
+    def _actualizar_fecha_hora_fin(self, reserva):
+        if reserva.fecha_hora_reserva:
+            hora_final = reserva.fecha_hora_reserva + timedelta(hours=2)
+            reserva.fecha_hora_fin = hora_final.time()
+            reserva.save()
+
+    def _crear_historial_estado(self, reserva, estado, fecha_inicio, fecha_fin):
+        if HistorialEstado.objects.filter(id_reserva = reserva, estado = estado).exists():
+            HistorialEstado.objects.filter(id_reserva = reserva, estado = estado).delete()
+        HistorialEstado.objects.create(
+            id_reserva=reserva,
+            estado=estado,
+            fecha_hora_inicio=fecha_inicio,
+            fecha_hora_fin=fecha_fin
+        )
+
+def cancelar_reserva(pk):
     reserva = Reserva.objects.get(pk=pk)
     reserva.delete()
     return redirect('misreservas')
@@ -392,6 +395,7 @@ class TablaView(TemplateView):
         partida.ganador = ganador
         partida.estado = EstadoPartida.objects.get(estado='Finalizada')
         partida.save()
+
 
 class CustomLoginView(LoginView):
     template_name = 'login.html'
