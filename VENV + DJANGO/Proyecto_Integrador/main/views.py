@@ -213,9 +213,9 @@ class MisReservasView(ListView):
         )
 
 def cancelar_reserva(pk):
-    reserva = Reserva.objects.get(pk=pk)
-    reserva.delete()
-    return redirect('misreservas')
+        reserva = Reserva.objects.get(pk=pk)
+        reserva.delete()
+        return redirect('misreservas')
 
 class ContactoView(TemplateView):
     template_name = 'contacto.html'
@@ -299,6 +299,7 @@ class mi_reserva(TemplateView):
         
         return context
 
+
 class TablaView(TemplateView):
     template_name = 'tabla.html'
 
@@ -340,28 +341,62 @@ class TablaView(TemplateView):
         partida = get_object_or_404(Partida, id_partida=partida_id)
         jugadores = Jugador.objects.filter(id_partida=partida)
         current_turn = self.get_current_turn(partida)
+        hay_error = False
 
         for jugador in jugadores:
+            # Verificar si hay datos para este jugador en el POST
+            tiene_datos = any(
+                request.POST.get(f'jugador_{jugador.id_jugador}_turno_{current_turn.numero_turno}_tirada_{j}', '')
+                for j in range(1, 4 if current_turn.ultimo_turno else 3)
+            )
+
+            if not tiene_datos:
+                continue
+
             tiradas_range = range(1, 4) if current_turn.ultimo_turno else range(1, 3)
+            primera_tirada = None
+            tiradas_completas = True
+            tiradas_jugador = []
+
             for j in tiradas_range:
                 clave = f'jugador_{jugador.id_jugador}_turno_{current_turn.numero_turno}_tirada_{j}'
                 pinos_derribados = request.POST.get(clave, '')
 
                 if pinos_derribados.isdigit():
                     pinos_derribados = int(pinos_derribados)
-                    if 0 <= pinos_derribados <= 10:
-                        Tirada.objects.create(
+                    max_pinos = 10 - (primera_tirada.pinos_deribados if primera_tirada else 0)
+
+                    if 0 <= pinos_derribados <= max_pinos:
+                        tirada = Tirada.objects.create(
                             pinos_deribados=pinos_derribados,
                             orden=j,
                             id_jugador=jugador,
                             numero_turno=current_turn,
                         )
+                        tiradas_jugador.append(tirada)
+                        if j == 1:
+                            primera_tirada = tirada
                     else:
-                        messages.error(request, f"Invalid input for {jugador.nombre_jugador}, turn {current_turn.numero_turno}, throw {j}: Must be between 0 and 10.")
-                elif pinos_derribados != '':
-                    messages.error(request, f"Invalid input for {jugador.nombre_jugador}, turn {current_turn.numero_turno}, throw {j}: Must be a number.")
+                        messages.error(request, f"⦁ Turno {current_turn.orden} invalido para el jugador {jugador.nombre_jugador}, tirada {j}: Es imposible tirar mas de 10 pinos.")
+                        tiradas_completas = False
+                        hay_error = True
+                        break
+                elif pinos_derribados == '':
+                    tiradas_completas = False
+                    hay_error = True
+                    break
+                else:
+                    messages.error(request, f"⦁ Turno {current_turn.orden} invalido para el jugador {jugador.nombre_jugador}, fila {j}: Debe ser un numero.")
+                    tiradas_completas = False
+                    hay_error = True
+                    break
 
-        if self.is_game_finished(partida):
+            if not tiradas_completas:
+                for tirada in tiradas_jugador:
+                    tirada.delete()
+                messages.error(request, f"⦁ Todas las tiradas deben ser registradas por el jugador {jugador.nombre_jugador} en el turno {current_turn.orden}.")
+
+        if not hay_error and self.is_game_finished(partida):
             self.finalize_game(partida)
             return redirect('mi_reserva', reserva_id=partida.id_reserva.id_reserva)
 
@@ -395,7 +430,6 @@ class TablaView(TemplateView):
         partida.ganador = ganador
         partida.estado = EstadoPartida.objects.get(estado='Finalizada')
         partida.save()
-
 
 class CustomLoginView(LoginView):
     template_name = 'login.html'
