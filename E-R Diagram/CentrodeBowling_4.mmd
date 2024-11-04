@@ -1,0 +1,167 @@
+erDiagram
+
+    
+    Cliente {
+        int id_cliente PK
+        string email
+        string nombre
+        string direccion
+        string telefono
+        string password
+    }
+    
+    Reserva {
+        int id_reserva PK
+        int id_cliente FK
+        int id_pista FK
+        datetime fecha_hora_reserva
+        time fecha_hora_fin
+    }
+
+    EstadoReserva {
+        string estado PK
+        string descripcion
+    }
+
+    Jugador {
+        int id_jugador PK
+        int id_partida FK
+        string nombre_jugador
+        int orden
+    }
+
+    Partida {
+        int id_partida PK
+        int id_pista FK
+        int id_reserva FK
+        string estado FK
+        int cant_jugadores
+    }
+
+    EstadoPartida {
+        string estado PK
+        string descripcion
+    }
+
+    Turno {
+        int numero_turno PK
+        int id_partida FK
+        string orden
+        boolean ultimo_turno
+    }
+    Tirada {
+        int numero_tirada PK
+        int pinos_deribados
+        int orden
+        int id_jugador FK
+        int numero_turno FK
+    }
+
+    PistaBowling {
+        int id_pista PK
+        int capacidad_maxima
+        string descripcion
+        int estado FK
+    }
+
+    EstadoPista {
+        string estado PK
+        string descripcion
+    }
+
+    Pedido {
+        int id_pedido PK
+        string estado FK
+        date fecha_hora_pedido
+        int id_reserva FK
+    }
+    EstadoPedido {
+        string estado PK
+        string descripcion
+    }
+    
+    PedidoXProducto {
+        int id_pedido FK
+        int id_producto FK
+        int cantidad
+    }
+
+    Producto {
+        int id_producto PK
+        string nombre
+        string descripcion
+        int precio
+    }
+    HistorialEstado {
+        int id_reserva FK
+        string estado FK
+        datetime fecha_hora_inicio
+        datetime fecha_hora_fin
+    }
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+    %% Relaciones
+    Cliente||--|{Reserva : hace
+
+    Pedido}|--||EstadoPedido : tiene
+
+    Pedido||--|{PedidoXProducto : tiene
+
+    Producto||--|{PedidoXProducto : tiene
+
+
+    Reserva}|--||HistorialEstado : tiene
+    HistorialEstado||--|{EstadoReserva : tiene
+
+    Reserva}|--||PistaBowling : en
+
+    Reserva||--|{Partida : tiene
+
+    PistaBowling||--|{Partida : "se juega"
+
+    PistaBowling}|--||EstadoPista : tiene
+
+    
+
+    Partida}|--||EstadoPartida : tiene
+
+    
+
+    Jugador||--|{Tirada : tiene
+
+    Turno||--|{Tirada : " 2 por turno"
+
+    Partida||--|{Turno : tiene
+
+    
+    
+
+   
+
+    Partida||--|{Jugador : " la juegan"
+
+
+    
+
+    Reserva||--|{Pedido : "se registra"
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
