@@ -102,7 +102,7 @@ Asegúrate de tener instalados los siguientes componentes en tu sistema:
    Cuando instalaste MySQL, debiste haber configurado una contraseña para el usuario `root`. Usa esa contraseña para acceder.
 
    ```bash
-   mysql -u root -p
+   sudo mysql -p
     ```
 
 3. **Después de ejecutar este comando, se te pedirá que ingreses la contraseña de root:**
