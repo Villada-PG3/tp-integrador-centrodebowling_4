@@ -212,7 +212,7 @@ class MisReservasView(ListView):
             fecha_hora_fin=fecha_fin
         )
 
-def cancelar_reserva(pk):
+def cancelar_reserva(request, pk):
         reserva = Reserva.objects.get(pk=pk)
         reserva.delete()
         return redirect('misreservas')
