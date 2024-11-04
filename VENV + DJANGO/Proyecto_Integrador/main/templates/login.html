@@ -5,15 +5,14 @@
     <link rel="stylesheet" href="../static/css/index.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 {% block content %}
-<br>
-<br>
-<br>
+
+<section class="hero">
+    <div class="hero-content2">
+
 <div class="container mt-5">
     <div class="row justify-content-center">
-        <div class="col-md-6">
+        <div class="col-md-12">
             <div >
-                <div >
-                    
                     <h2>Iniciar Sesión</h2>
                     <form  method="post">
                         {% csrf_token %}
@@ -21,9 +20,11 @@
                         <button type="submit" class="btn btn-login">Ingresar</button>
                     </form>
                     <p class="forgot-password"><a href="{% url 'registrar' %}">¿No tenes Cuenta?</a></p>
-                </div>
             </div>
         </div>
     </div>
 </div>
+
+</div>
+</section>
 {% endblock %}

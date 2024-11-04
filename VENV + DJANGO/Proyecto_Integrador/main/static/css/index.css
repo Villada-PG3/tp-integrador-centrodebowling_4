@@ -323,21 +323,30 @@
         .form-group label {
             font-weight: 500;
         }
+
         .form-group input {
             padding: 8px;
             border: 1px solid #ccc;
             border-radius: 4px;
         }
+
         .forgot-password {
+            color: white;
             text-align: center;
             margin-top: 15px;
+
         }
+
+
         .forgot-password a {
-            color: #ff6600;
+            color: white;
             text-decoration: none;
+
         }
         .forgot-password a:hover {
             text-decoration: underline;
+            
+            color: white;
         }
 
 
@@ -443,5 +452,19 @@
             transition: background-color 0.3s ease;
         
         }
+        .hero-content2 {
+            width: 400px;
+        }
 
+        form p {
+            text-align: left;
+        }
+
+        label.col-form-label {
+            text-align: left;
+        }
+
+        .form-group label {
+            text-align: left;
+        }
         

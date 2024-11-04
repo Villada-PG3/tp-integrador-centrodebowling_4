@@ -74,7 +74,7 @@ class ReservaForm(forms.ModelForm):
         empty_label=None
     )
 
-    email_cliente = forms.EmailField(label='Correo electrónico ', widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ingrese correo'}))
+    email_cliente = forms.EmailField(label='Correo electrónico: ', widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ingrese correo'}))
 
     class Meta:
         model = Reserva
