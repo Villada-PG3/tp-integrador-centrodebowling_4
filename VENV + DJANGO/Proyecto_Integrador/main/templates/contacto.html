@@ -1,16 +1,26 @@
-<title>{% block title %}Strike Zone - Contacto{% endblock %}</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Strike Zone - Centro de Bowling{% endblock %}</title>
+
+    {%load static%}
+    <link rel="stylesheet" href="../static/css/index.css">
+    <link rel="stylesheet" href="../static/css/contacto.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
+</head>
 
 
 <header>
     <style>
-        header, header-container{
+         header, header-container{
                     display: flex; 
                     align-items: center;
                     justify-content: space-between; 
-                    padding: 20px 40px; 
+                    padding: 20px 30px; 
                 }
-        
+                
                 .nav-menu {
                     display: flex; 
                     list-style: none; 
@@ -19,7 +29,7 @@
                 }
                 
                 .nav-menu li {
-                    margin: 0 5px;
+                    margin: 0 15px;
                 }
                 
                 .nav-menu a {
@@ -28,8 +38,23 @@
                 }
                 
                 .nav-menu a:hover {
-                    color: darkgray;
+                    color: rgb(255, 106, 0);
                 }
+
+                .contact-section {
+                background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(/static/img/StrikeZOne.jpeg) no-repeat center center / cover;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+                color: white;
+                flex-direction: column;
+                padding-top: 80px;
+            }
+            .info-item h3 {
+    color: #ff6701;
+}
+
     </style>
     <div class="header-container">
         <a href="{% url 'index' %}" class="logo">Strike Zone</a>
@@ -88,20 +113,15 @@
     </div>
 </header>
 
-{%load static%}
-    <link rel="stylesheet" href="../static/css/index.css">
+
 
 {% block content %}
 
-<section class="hero">
-    
-</section>
+
 <section class="contact-section">
-    <h2>Contacto</h2>
-    <div class="contact-content">
         
         <div class="contact-info">
-            <div class="info-card">
+            <div class="reservation-form">
                 <div class="info-item">
                     <h3><i class="fas fa-map-marker-alt"></i> Dirección</h3>
                     <p> Av. Vélez Sarsfield 361<br>CP X5000JJD Córdoba</p>
@@ -119,21 +139,21 @@
                 <div class="info-item">
                     <h3><i class="fas fa-clock"></i> Horario</h3>
                     <p>Lunes a Viernes: 12:00 AM - 12:00 PM</p>
-                    <p>Sábados y Domingos: 12:00 - 02:00</p>
+                    <p>Sábados y Domingos: 12:00 AM - 02:00 PM</p>
                 </div>
             </div>
-            
+            <br>
+            <br>
             <div class="map-container">
                 <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3404.7996737784006!2d-64.19047362358687!3d-31.419644974260255!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9432a28415678e75%3A0x467decebf146c556!2sBowling%20Space%20Bar!5e0!3m2!1ses-419!2sar!4v1730718908623!5m2!1ses-419!2sar" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            </div>
         </div>
-    </div>
+
 </section>
 {% endblock %}
 <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-<script>
-    
 
-    // Animación suave al hacer scroll a las secciones
+<script>
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
             e.preventDefault();
