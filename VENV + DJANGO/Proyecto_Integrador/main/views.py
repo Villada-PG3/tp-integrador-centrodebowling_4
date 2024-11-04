@@ -583,6 +583,8 @@ class EditarReservaView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     def form_valid(self, form):
         reserva = form.save(commit=False)
         nuevo_estado = form.cleaned_data.get('nuevo_estado')
+        if HistorialEstado.objects.filter(id_reserva = reserva, estado = nuevo_estado).exists():
+            HistorialEstado.objects.filter(id_reserva = reserva, estado = nuevo_estado).delete()
         
         if nuevo_estado:
             HistorialEstado.objects.create(
