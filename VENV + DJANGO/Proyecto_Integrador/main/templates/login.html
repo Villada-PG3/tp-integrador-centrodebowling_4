@@ -12,7 +12,6 @@
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-12">
-            <div >
                     <h2>Iniciar Sesión</h2>
                     <form  method="post">
                         {% csrf_token %}
@@ -20,7 +19,6 @@
                         <button type="submit" class="btn btn-login">Ingresar</button>
                     </form>
                     <p class="forgot-password"><a href="{% url 'registrar' %}">¿No tenes Cuenta?</a></p>
-            </div>
         </div>
     </div>
 </div>
