@@ -8,7 +8,7 @@ from django.shortcuts import render
 
 
 
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView,DeleteView
 from django.urls import reverse_lazy
 
 from .forms import  CustomLoginForm
@@ -37,6 +37,7 @@ from django.views.generic import View
 from django.shortcuts import render, redirect
 from .forms import JugadoresForm
 from .models import Partida
+from .models import Pedido, PedidoXProducto, EstadoPedido, Producto
 
 from django.views.generic import View
 from django.shortcuts import render, redirect
@@ -638,3 +639,80 @@ class EditarReservaView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return super().form_valid(form)
 
 
+class VerPedidosView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    model = Pedido
+    template_name = 'ver_pedidos.html'
+    context_object_name = 'pedidos'
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get_queryset(self):
+        return Pedido.objects.all().order_by('-fecha_hora_pedido')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        pedidos = context['pedidos']
+        for pedido in pedidos:
+            pedido_productos = PedidoXProducto.objects.filter(id_pedido=pedido)
+            pedido.productos = [
+                {
+                    'nombre': pp.id_producto.nombre,
+                    'cantidad': pp.cantidad
+                }
+                for pp in pedido_productos
+            ]
+        return context
+    
+
+class EditarPedidoView(LoginRequiredMixin, UserPassesTestMixin, View):
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get(self, request, *args, **kwargs):
+        messages.info(request, "La funcionalidad de editar pedido aún no está implementada.")
+        return redirect('ver_pedidos')
+
+    def post(self, request, *args, **kwargs):
+        messages.info(request, "La funcionalidad de editar pedido aún no está implementada.")
+        return redirect('ver_pedidos')
+
+class CancelarPedidoView(LoginRequiredMixin, UserPassesTestMixin, View):
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get(self, request, *args, **kwargs):
+        messages.info(request, "La funcionalidad de cancelar pedido aún no está implementada.")
+        return redirect('ver_pedidos')
+
+    def post(self, request, *args, **kwargs):
+        messages.info(request, "La funcionalidad de cancelar pedido aún no está implementada.")
+        return redirect('ver_pedidos')
+    
+
+
+
+class VerPistasView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    model = Pedido
+    template_name = 'ver_pedidos.html'
+    context_object_name = 'pedidos'
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get_queryset(self):
+        return Pedido.objects.all().order_by('-fecha_hora_pedido')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        pedidos = context['pedidos']
+        for pedido in pedidos:
+            pedido_productos = PedidoXProducto.objects.filter(id_pedido=pedido)
+            pedido.productos = [
+                {
+                    'nombre': pp.id_producto.nombre,
+                    'cantidad': pp.cantidad
+                }
+                for pp in pedido_productos
+            ]
+        return context

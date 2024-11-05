@@ -1,5 +1,5 @@
 
-
+from django.forms import inlineformset_factory
 from django import forms
 from .models import Cliente
 from django.contrib.auth.hashers import make_password 
@@ -146,3 +146,8 @@ class ReservaEditForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['id_pista'].queryset = PistaBowling.objects.all()
+
+
+from django import forms
+from .models import Pedido, PedidoXProducto, EstadoPedido, Producto
+
