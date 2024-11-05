@@ -570,7 +570,11 @@ class AgregarPedidoView(View):
 
 def finalizar_reserva(request, reserva_id):
     if request.method == 'POST':
-        reserva = get_object_or_404(Reserva, pk=reserva_id, id_cliente=request.user.id_cliente)
+        if request.user.is_superuser:
+            reserva = get_object_or_404(Reserva, pk=reserva_id)
+        else:
+            reserva = get_object_or_404(Reserva, pk=reserva_id, id_cliente=request.user.id_cliente)
+        
         estado_finalizada = EstadoReserva.objects.get(estado='Finalizada')
         
         HistorialEstado.objects.create(
@@ -580,11 +584,20 @@ def finalizar_reserva(request, reserva_id):
             fecha_hora_fin=timezone.now()
         )
         
+        reserva.estado = estado_finalizada
+        reserva.save()
+        
         messages.success(request, 'Reserva finalizada exitosamente.')
-        return redirect('mi_reserva', reserva_id=reserva_id)
+        
+        if request.user.is_superuser:
+            return redirect(reverse('ver_reservas'))
+        else:
+            return redirect('mi_reserva', reserva_id=reserva_id)
     
-    return redirect('mi_reserva', reserva_id=reserva_id)
-
+    if request.user.is_superuser:
+        return redirect(('ver_reservas'))
+    else:
+        return redirect('mi_reserva', reserva_id=reserva_id)
 class VerReservasView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = Reserva
     template_name = 'ver.html'
