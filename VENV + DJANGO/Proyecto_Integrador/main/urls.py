@@ -29,7 +29,7 @@ urlpatterns = [
     path('editar-reserva/<int:pk>/', EditarReservaView.as_view(), name='editar_reserva'),
     path('ver_pedidos/', VerPedidosView.as_view(), name='ver_pedidos'),
     path('editar_pedido/<int:pk>/', EditarPedidoView.as_view(), name='editar_pedido'),
-    path('eliminar_pedido/<int:pk>/', EliminarPedidoView.as_view(), name='eliminar_pedido'),
+    path('eliminar_pedido/<int:pk>/', EliminarPedidoView.as_view(), name='cancelar_pedido'),
     path('ver_pistas/', VerPistasView.as_view(), name='ver_pistas'),
     path('editar_pista/<int:pk>/', EditarPistaView.as_view(), name='editar_pista')
 ]

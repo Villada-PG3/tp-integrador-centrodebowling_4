@@ -566,7 +566,7 @@ class AgregarPedidoView(View):
                 cantidad=int(cantidad)
             )
 
-        return redirect('mi_reserva', reserva_id)
+        return redirect(reverse('mi_reserva', args=[reserva_id]))
 
 def finalizar_reserva(request, reserva_id):
     if request.method == 'POST':
