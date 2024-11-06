@@ -11,8 +11,11 @@
         color: #333;
         background-color: #f8f9fa;
     }
+    .hero-content {
+        max-width: 800px;
+    }
     header {
-        background-color: rgba(255, 255, 255, 0.95);
+        background-color: rgba(44, 42, 43, 0.1);
         -webkit-backdrop-filter: blur(10px);
         backdrop-filter: blur(10px);
         padding: 1rem 0;
@@ -26,30 +29,43 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 20px;
+        padding: 0 30px;
+        width: 100%;
     }
     .logo {
-        color: #ff6600;
+        color: #ffffff;
         font-size: 1.8rem;
         font-weight: bold;
         text-decoration: none;
         letter-spacing: 1px;
+        transition: 0.3s;
+        text-decoration: none;
+    }
+    .logo:hover{
+        color: #ff6600;
+        text-decoration: none;
+    }
+    nav{
+        margin-left: 20px;
+        color: whitesmoke;
+
     }
     .nav-menu {
         display: flex;
-        list-style-type: none;
+        padding-left: 20px 0px 5px 0px;
+        margin-left: 20px;
     }
     .nav-menu li {
         margin-left: 30px;
+        
     }
     .nav-menu a {
-        color: #333;
+        color: white;
         text-decoration: none;
         font-size: 1rem;
         font-weight: 500;
         transition: color 0.3s ease;
+        
     }
     .nav-menu a:hover {
         color: #ff6600;
@@ -79,11 +95,6 @@
     .btn:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    .contact-section {
-        padding: 120px 20px 60px;
-        max-width: 1200px;
-        margin: 0 auto;
     }
     .contact-section h2 {
         text-align: center;
@@ -151,6 +162,7 @@
         transform: translateY(-2px);
     }
     .contact-info {
+        width: 100%;
         flex: 1;
         min-width: 300px;
         display: flex;
@@ -161,18 +173,11 @@
         background-color: white;
         padding: 30px;
         border-radius: 15px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        box-shadow: 0 10px 30px rgba(8, 8, 8, 0.102);
         margin-bottom: 20px;
     }
     .info-item {
         margin-bottom: 20px;
-    }
-    .info-item h3 {
-        font-size: 1.2rem;
-        margin-bottom: 10px;
-        color: #ff6600;
-        display: flex;
-        align-items: center;
     }
     .info-item h3 i {
         margin-right: 10px;
@@ -210,9 +215,24 @@
         border-radius: 15px;
         overflow: hidden;
         margin-top: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
     .map-container iframe {
-        width: 100%;
+        width: 600px;
         height: 100%;
         border: none;
+    }
+    .reservation-form {
+        color: #000 !important;
+        width: 600px;
+        margin: 40px auto;
+        padding: 30px;
+        border-radius: 23px;
+        background-color: white;
+        box-shadow: 19px 19px 66px #7f7e7e, -19px -19px 66px #6c6c6c;
+    }
+    .info-item {
+        margin: 30px 0px;
     }

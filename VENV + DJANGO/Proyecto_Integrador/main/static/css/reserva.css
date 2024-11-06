@@ -5,14 +5,14 @@
     padding: 0;
     box-sizing: border-box;
 }
-body {    
+body {
     font-family: 'Poppins', sans-serif;
     line-height: 1.6;
     color: #333;
-    overflow-x: hidden;
+    overflow-x: hidden; 
 }
 header {
-    background-color: rgba(255, 255, 255, 0.95);
+    background-color: rgba(139, 22, 22, 0.95);
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
     padding: 1rem 0;

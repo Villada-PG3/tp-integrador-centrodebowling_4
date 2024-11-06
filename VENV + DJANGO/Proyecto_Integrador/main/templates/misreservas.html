@@ -1,104 +1,82 @@
-<title>{% block title %}Strike Zone - Reserva{% endblock %}</title>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strike Zone - Reserva</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 
-    <header>
-        <style>
-            header, .header-container {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                padding: 20px 30px;
-            }
-    
-            .nav-menu {
-                display: flex;
-                list-style: none;
-                padding: 0;
-                margin: 0;
-            }
-    
-            .nav-menu li {
-                margin: 0 15px;
-            }
-    
-            .nav-menu a {
-                color: black;
-                text-decoration: none;
-            }
-    
-            .nav-menu a:hover {
-                color: #f0f0f0;
-            }
-        </style>
-        <div class="header-container">
-            <a href="{% url 'index' %}" class="logo">Strike Zone</a>
-            <nav>
-                <ul class="nav-menu">
-                    <li><a href="{% url 'index' %}">Inicio</a></li>
-                    <li><a href="{% url 'reserva' %}">Reservar</a></li>
-                    {% if user.is_authenticated %}
-                        <li><a href="{% url 'misreservas' %}">Mis Reservas</a></li>
-                    {% endif %}
-                    <li><a href="{% url 'contacto' %}">Contacto</a></li>
-                </ul>
-            </nav>
-    
-            <div class="auth-buttons">
+    <link rel="stylesheet" href="../static/css/index.css">
+    <style>
+        section.hero {
+            padding-top: 80px;
+            height: auto;
+            
+        }
+        .hero-content4 {
+            max-width: 800px;
+            
+        }
+    </style>
+</head>
+
+<header>
+    <div class="header-container">
+        <a href="{% url 'index' %}" class="logo">Strike Zone</a>
+        <nav>
+
+            
+            <ul class="nav-menu">
+                <li><a href="{% url 'index' %}">Inicio</a></li>
+                <li><a href="{% url 'reserva' %}">Reservar</a></li>
                 {% if user.is_authenticated %}
-                    
-                    {% if user.is_superuser %}
-                        <form action="{% url 'admin:index' %}">
-                            <button type='submit' class="btn btn-register">Administrar</button>
-                        </form>
-                        <!-- Dropdown menu for "Ver" -->
-                        <div class="dropdown">
-                            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownVer" data-bs-toggle="dropdown" aria-expanded="false">
-                                Ver
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="dropdownVer">
-                                <li>
-                                    <form action="{% url 'ver_reservas' %}">
-                                        <button type="submit" class="dropdown-item">Ver Reservas</button>
-                                    </form>
-                                </li>
-                                <li>
-                                    <form action="{% url 'ver_pedidos' %}">
-                                        <button type="submit" class="dropdown-item">Ver Pedidos</button>
-                                    </form>
-                                </li>
-                                <li>
-                                    <form action="{% url 'ver_pistas' %}">
-                                        <button type="submit" class="dropdown-item">Ver Pistas</button>
-                                    </form>
-                                </li>
-                            </ul>
-                        </div>
-                    {% endif %}
-                    <form action="{% url 'logout' %}">
-                        <button type='submit' class="btn btn-login">Cerrar Sesión</button>
-                    </form>
-    
-                {% else %}
-                    <form action="{% url 'login' %}">
-                        <button type='submit' class="btn btn-login">Iniciar Sesión</button>
-                    </form>
-    
-                    <form action="{% url 'registrar' %}">
-                        <button type='submit' class="btn btn-register">Registrarse</button>
-                    </form>
-                    
+                <li><a href="{% url 'misreservas' %}">Mis Reservas</a></li>
                 {% endif %}
-            </div>
+                <li><a href="{% url 'contacto' %}">Contacto</a></li>
+            </ul>
+        </nav>
+        <div class="auth-buttons">
+            {% if user.is_authenticated %}
+            
+            {% if user.is_superuser %}
+                <form action="{% url 'admin:index' %}">
+                    <button type='submit' class="btn btn-register"  >Administrar</button>
+                </form>
+                <form action="{% url 'ver_reservas' %}">
+                    <button type='submit' class="btn btn-primary">Ver Reservas</button>
+                </form>
+            {% endif %}
+            <form action="{% url 'logout' %}">
+                <button type='submit' class="btn btn-login"  >Cerrar Sesión</button>
+            </form>
+
+            
+            {% else %}
+            <form action="{% url 'login' %}">
+                <button type='submit' class="btn btn-login"  >Iniciar Sesión</button>
+            </form>
+
+            <form action="{% url 'registrar' %}">
+                <button  type='submit' class="btn btn-register"  >Registrarse</button>
+            </form>
+            
+            
+            {% endif %}
         </div>
-    </header>
+    </div>
+
+</header>
+
+
+    
 
 {%load static%}
-    <link rel="stylesheet" href="../static/css/misreservas.css">
+
+
 
     {% block content %}
+    <section class="hero">
 
-    <h1 class="reservations-title">Mis Reservas</h1>
-    
     <div class="reservations-container">
         {% for reserva in object_list %}
             <div class="reservation-card">
@@ -142,6 +120,10 @@
             <li>No tienes reservas.</li>
         {% endfor %}
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+
+</div>
+</section>  
     {% endblock %}
+
+    </html>
+
