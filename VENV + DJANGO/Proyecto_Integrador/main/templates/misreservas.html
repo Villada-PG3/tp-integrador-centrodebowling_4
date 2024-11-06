@@ -1,61 +1,39 @@
-<title>{% block title %}Strike Zone - Reserva{% endblock %}</title>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strike Zone - Reserva</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-
-<header>
+    <link rel="stylesheet" href="../static/css/index.css">
     <style>
-        header, header-container{
-            display: flex; 
-            align-items: center;
-            justify-content: space-between; 
-            padding: 20px 30px; 
+        section.hero {
+            padding-top: 80px;
+            height: auto;
+            
         }
-        
-        .nav-menu {
-            display: flex; 
-            list-style: none; 
-            padding: 0; 
-            margin: 0; 
-        }
-        
-        .nav-menu li {
-            margin: 0 15px;
-        }
-        
-        .nav-menu a {
-            color: black; 
-            text-decoration: none; 
-        }
-        
-        .nav-menu a:hover {
-            color: #f0f0f0;
+        .hero-content4 {
+            max-width: 800px;
+            
         }
     </style>
+</head>
+
+<header>
     <div class="header-container">
         <a href="{% url 'index' %}" class="logo">Strike Zone</a>
         <nav>
+
+            
             <ul class="nav-menu">
                 <li><a href="{% url 'index' %}">Inicio</a></li>
-                
-
-                
-
                 <li><a href="{% url 'reserva' %}">Reservar</a></li>
                 {% if user.is_authenticated %}
-                    <li><a href="{% url 'misreservas' %}">Mis Reservas</a></li>
+                <li><a href="{% url 'misreservas' %}">Mis Reservas</a></li>
                 {% endif %}
-
-                
-
-                
-
-                
                 <li><a href="{% url 'contacto' %}">Contacto</a></li>
             </ul>
         </nav>
-        
-
-        
-
         <div class="auth-buttons">
             {% if user.is_authenticated %}
             
@@ -85,15 +63,16 @@
             {% endif %}
         </div>
     </div>
+
 </header>
 
 {%load static%}
-    <link rel="stylesheet" href="../static/css/misreservas.css">
+
+
 
     {% block content %}
+    <section class="hero">
 
-    <h1 class="reservations-title">Mis Reservas</h1>
-    
     <div class="reservations-container">
         {% for reserva in object_list %}
             <div class="reservation-card">
@@ -137,5 +116,8 @@
             <li>No tienes reservas.</li>
         {% endfor %}
     </div>
-    
+</div>
+</section>  
     {% endblock %}
+
+    </html>
