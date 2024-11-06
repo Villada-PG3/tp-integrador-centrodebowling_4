@@ -8,7 +8,7 @@ from django.shortcuts import render
 
 
 
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView,DeleteView
 from django.urls import reverse_lazy
 
 from .forms import  CustomLoginForm
@@ -37,6 +37,7 @@ from django.views.generic import View
 from django.shortcuts import render, redirect
 from .forms import JugadoresForm
 from .models import Partida
+from .models import Pedido, PedidoXProducto, EstadoPedido, Producto
 
 from django.views.generic import View
 from django.shortcuts import render, redirect
@@ -565,11 +566,15 @@ class AgregarPedidoView(View):
                 cantidad=int(cantidad)
             )
 
-        return redirect('mi_reserva', reserva_id)
+        return redirect(reverse('mi_reserva', args=[reserva_id]))
 
 def finalizar_reserva(request, reserva_id):
     if request.method == 'POST':
-        reserva = get_object_or_404(Reserva, pk=reserva_id, id_cliente=request.user.id_cliente)
+        if request.user.is_superuser:
+            reserva = get_object_or_404(Reserva, pk=reserva_id)
+        else:
+            reserva = get_object_or_404(Reserva, pk=reserva_id, id_cliente=request.user.id_cliente)
+        
         estado_finalizada = EstadoReserva.objects.get(estado='Finalizada')
         
         HistorialEstado.objects.create(
@@ -579,11 +584,20 @@ def finalizar_reserva(request, reserva_id):
             fecha_hora_fin=timezone.now()
         )
         
+        reserva.estado = estado_finalizada
+        reserva.save()
+        
         messages.success(request, 'Reserva finalizada exitosamente.')
-        return redirect('mi_reserva', reserva_id=reserva_id)
+        
+        if request.user.is_superuser:
+            return redirect(reverse('ver_reservas'))
+        else:
+            return redirect('mi_reserva', reserva_id=reserva_id)
     
-    return redirect('mi_reserva', reserva_id=reserva_id)
-
+    if request.user.is_superuser:
+        return redirect(('ver_reservas'))
+    else:
+        return redirect('mi_reserva', reserva_id=reserva_id)
 class VerReservasView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = Reserva
     template_name = 'ver.html'
@@ -638,3 +652,91 @@ class EditarReservaView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return super().form_valid(form)
 
 
+class VerPedidosView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    model = Pedido
+    template_name = 'ver_pedidos.html'
+    context_object_name = 'pedidos'
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get_queryset(self):
+        return Pedido.objects.all().order_by('-fecha_hora_pedido')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        pedidos = context['pedidos']
+        for pedido in pedidos:
+            pedido_productos = PedidoXProducto.objects.filter(id_pedido=pedido)
+            pedido.productos = [
+                {
+                    'nombre': pp.id_producto.nombre,
+                    'cantidad': pp.cantidad
+                }
+                for pp in pedido_productos
+            ]
+        return context
+    
+
+class EditarPedidoView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Pedido
+    template_name = 'editar_pedido.html'
+    fields = ['estado', 'fecha_hora_pedido', 'id_reserva']
+    success_url = reverse_lazy('ver_pedidos')
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Editar Pedido'
+        return context
+
+    def form_valid(self, form):
+        pedido = form.save(commit=False)
+        pedido.save()
+        return super().form_valid(form)
+
+class EliminarPedidoView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Pedido
+    template_name = 'eliminar_pedido.html'
+    success_url = reverse_lazy('ver_pedidos')
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get_object(self, queryset=None):
+        id_pedido = self.kwargs.get('pk')
+        return get_object_or_404(Pedido, id_pedido=id_pedido)
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        success_url = self.get_success_url()
+        self.object.delete()
+        return HttpResponseRedirect(success_url)
+
+
+
+class VerPistasView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    model = PistaBowling
+    template_name = 'ver_pistas.html'
+    context_object_name = 'pistas'
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get_queryset(self):
+        return PistaBowling.objects.all().order_by('id_pista')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return context
+    
+class EditarPistaView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = PistaBowling
+    template_name = 'editar_pista.html'
+    fields = ['capacidad_maxima', 'descripcion', 'estado']
+    success_url = reverse_lazy('ver_pistas')
+
+    def test_func(self):
+        return self.request.user.is_superuser
