@@ -33,7 +33,7 @@ class ClienteManager(BaseUserManager):
 
 class Cliente(AbstractBaseUser, PermissionsMixin):
     id_cliente = models.AutoField(primary_key=True)
-    email = models.EmailField(unique=True, default='default@example.com')
+    email = models.EmailField(unique=True)
     nombre = models.CharField(max_length=60)
     direccion = models.CharField(max_length=120)
     telefono = models.CharField(max_length=20)

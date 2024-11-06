@@ -1,5 +1,5 @@
 
-
+from django.forms import inlineformset_factory
 from django import forms
 from .models import Cliente
 from django.contrib.auth.hashers import make_password 
@@ -42,7 +42,7 @@ class CustomRegisterForm(forms.ModelForm):
             'nombre': forms.TextInput(attrs={'class': 'form-control'}),
             'direccion': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Av. Colon 9999'}),
             'telefono': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '+54 9 351 111 1234'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'example@example.com'}),
         }
 
     def clean(self):
@@ -146,3 +146,8 @@ class ReservaEditForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['id_pista'].queryset = PistaBowling.objects.all()
+
+
+from django import forms
+from .models import Pedido, PedidoXProducto, EstadoPedido, Producto
+

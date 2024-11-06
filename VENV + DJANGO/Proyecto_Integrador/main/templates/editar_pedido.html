@@ -5,14 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Strike Zone - Centro de Bowling{% endblock %}</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-
     
-
     {%load static%}
     <link rel="stylesheet" href="{% static 'css/ver.css' %}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
-    
-
 </head>
 <body>
     <header>
@@ -107,32 +103,24 @@
     </header>
     <br><br><br><br>
     <div class="container">
-        <h2><i class="fas fa-edit mr-2"></i>Editar Reserva</h2>
+        <h2><i class="fas fa-edit mr-2"></i>Editar Pedido</h2>
         <form method="post">
             {% csrf_token %}
             <div class="form-group">
-                <label for="{{ form.id_cliente.id_for_label }}" class="col-form-label"><i class="fas fa-user mr-2"></i>{{ form.id_cliente.label }}</label>
-                {{ form.id_cliente }}
+                <label for="{{ form.estado.id_for_label }}" class="col-form-label"><i class="fas fa-flag mr-2"></i>{{ form.estado.label }}</label>
+                {{ form.estado }}
             </div>
             <div class="form-group">
-                <label for="{{ form.id_pista.id_for_label }}" class="col-form-label"><i class="fas fa-bowling-ball mr-2"></i>{{ form.id_pista.label }}</label>
-                {{ form.id_pista }}
+                <label for="{{ form.fecha_hora_pedido.id_for_label }}" class="col-form-label"><i class="far fa-calendar-alt mr-2"></i>{{ form.fecha_hora_pedido.label }}</label>
+                {{ form.fecha_hora_pedido }}
             </div>
             <div class="form-group">
-                <label for="{{ form.fecha_hora_reserva.id_for_label }}" class="col-form-label"><i class="far fa-calendar-alt mr-2"></i>{{ form.fecha_hora_reserva.label }}</label>
-                {{ form.fecha_hora_reserva }}
-            </div>
-            <div class="form-group">
-                <label for="{{ form.fecha_hora_fin.id_for_label }}" class="col-form-label"><i class="far fa-clock mr-2"></i>{{ form.fecha_hora_fin.label }}</label>
-                {{ form.fecha_hora_fin }}
-            </div>
-            <div class="form-group">
-                <label for="{{ form.nuevo_estado.id_for_label }}" class="col-form-label"><i class="fas fa-toggle-on mr-2"></i>{{ form.nuevo_estado.label }}</label>
-                {{ form.nuevo_estado }}
+                <label for="{{ form.id_reserva.id_for_label }}" class="col-form-label"><i class="fas fa-bookmark mr-2"></i>{{ form.id_reserva.label }}</label>
+                {{ form.id_reserva }}
             </div>
             <div class="text-center mt-4">
                 <button type="submit" class="btn btn-primary mr-2"><i class="fas fa-save mr-2"></i>Guardar Cambios</button>
-                <a href="{% url 'ver_reservas' %}" class="btn btn-secondary"><i class="fas fa-times mr-2"></i>Cancelar</a>
+                <a href="{% url 'ver_pedidos' %}" class="btn btn-secondary"><i class="fas fa-times mr-2"></i>Cancelar</a>
             </div>
         </form>
     </div>
@@ -140,5 +128,5 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
 </body>
+</html>
