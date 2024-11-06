@@ -363,7 +363,7 @@ class TablaView(TemplateView):
                 clave = f'jugador_{jugador.id_jugador}_turno_{current_turn.numero_turno}_tirada_{j}'
                 pinos_derribados = request.POST.get(clave, '')
 
-                if pinos_derribados.isdigit():
+                if pinos_derribados.isdigit() and current_turn.ultimo_turno == False:
                     pinos_derribados = int(pinos_derribados)
                     max_pinos = 10 - (primera_tirada.pinos_deribados if primera_tirada else 0)
 
@@ -386,6 +386,16 @@ class TablaView(TemplateView):
                     tiradas_completas = False
                     hay_error = True
                     break
+                elif current_turn.ultimo_turno:
+                    tirada = Tirada.objects.create(
+                            pinos_deribados=pinos_derribados,
+                            orden=j,
+                            id_jugador=jugador,
+                            numero_turno=current_turn,
+                        )
+                    tiradas_jugador.append(tirada)
+                    tiradas_completas = True
+                    hay_error = False
                 else:
                     messages.error(request, f"⦁ Turno {current_turn.orden} invalido para el jugador {jugador.nombre_jugador}, fila {j}: Debe ser un numero.")
                     tiradas_completas = False
@@ -473,8 +483,10 @@ class ReservaView(CreateView):
 class JugadoresView(View):
     def get(self, request, partida_id, reserva_id):
         # Obtener la capacidad máxima de la pista
-        capacidad_maxima = request.session.get('capacidad_maxima', 10)  # Cambia el valor por defecto si es necesario
-        # Puedes usar reserva_id si lo necesitas para algo
+        reserva = Reserva.objects.get(id_reserva=reserva_id)
+        pista = PistaBowling.objects.get(id_pista = reserva.id_pista.id_pista)
+        capacidad_maxima = pista.capacidad_maxima  
+        
         return render(request, 'cant_jugadores.html', {'capacidad_maxima': capacidad_maxima})
 
     def post(self, request, partida_id, reserva_id):
