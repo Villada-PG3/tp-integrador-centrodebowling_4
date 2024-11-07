@@ -58,7 +58,7 @@ from django.shortcuts import redirect
 from django.utils import timezone
 from datetime import timedelta
 
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpRequest
 
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import TemplateView
@@ -141,6 +141,12 @@ from .models import Reserva, Pedido, PedidoXProducto, EstadoPedido
 from .forms import MultiplePedidoForm
 from django.utils import timezone
 
+
+from django.views.generic import TemplateView
+from django.shortcuts import get_object_or_404, redirect
+from django.http import HttpResponseNotFound
+from .models import Reserva, Pedido, PedidoXProducto, Producto, HistorialEstado, Partida, EstadoPartida, Jugador
+
 #_____________________________________________________
 #_____________ VIEWS__________________________________
 #_____________________________________________________
@@ -148,7 +154,7 @@ from django.utils import timezone
 class IndexView(TemplateView):
     template_name = 'index.html'
 
-class MisReservasView(ListView):
+class MisReservasView(ListView): #modularizada
     model = Reserva
     template_name = 'misreservas.html'
 
@@ -218,15 +224,11 @@ def cancelar_reserva(request, pk):
         reserva.delete()
         return redirect('misreservas')
 
-class ContactoView(TemplateView):
+class ContactoView(TemplateView): #modularizada
     template_name = 'contacto.html'
 
-from django.views.generic import TemplateView
-from django.shortcuts import get_object_or_404, redirect
-from django.http import HttpResponseNotFound
-from .models import Reserva, Pedido, PedidoXProducto, Producto, HistorialEstado, Partida, EstadoPartida, Jugador
 
-class mi_reserva(TemplateView):
+class mi_reserva(TemplateView): #mod
     template_name = 'menu_partidas_bar.html'
 
     def get_context_data(self, **kwargs):
@@ -379,27 +381,19 @@ class mi_reserva(TemplateView):
             id_producto=producto,
             defaults={'cantidad': 0}
         )
-class TablaView(TemplateView):
+class TablaView(TemplateView):#MOD
     template_name = 'tabla.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         partida_id = self.kwargs['partida_id']
-        partida = get_object_or_404(Partida, id_partida=partida_id)
-
-        jugadores = Jugador.objects.filter(id_partida=partida)
-        turnos = Turno.objects.filter(id_partida=partida).order_by('numero_turno')
-        tiradas = Tirada.objects.filter(numero_turno__in=turnos)
-
-        tiradas_dict = {}
-        puntaje_jugador = {jugador.id_jugador: 0 for jugador in jugadores}
-        for tirada in tiradas:
-            key = f"{tirada.id_jugador.id_jugador}-{tirada.numero_turno.numero_turno}"
-            if key not in tiradas_dict:
-                tiradas_dict[key] = []
-            tiradas_dict[key].append(tirada)
-            puntaje_jugador[tirada.id_jugador.id_jugador] += tirada.pinos_deribados
-
+        partida = self.get_partida(partida_id)
+        
+        jugadores = self.get_jugadores(partida)
+        turnos = self.get_turnos(partida)
+        tiradas = self.get_tiradas(turnos)
+        
+        tiradas_dict, puntaje_jugador = self.process_tiradas(jugadores, tiradas)
         current_turn = self.get_current_turn(partida)
 
         context.update({
@@ -417,72 +411,19 @@ class TablaView(TemplateView):
         return context
 
     def post(self, request, partida_id):
-        partida = get_object_or_404(Partida, id_partida=partida_id)
-        jugadores = Jugador.objects.filter(id_partida=partida)
+        partida = self.get_partida(partida_id)
+        jugadores = self.get_jugadores(partida)
         current_turn = self.get_current_turn(partida)
         hay_error = False
 
         for jugador in jugadores:
-            # Verificar si hay datos para este jugador en el POST
-            tiene_datos = any(
-                request.POST.get(f'jugador_{jugador.id_jugador}_turno_{current_turn.numero_turno}_tirada_{j}', '')
-                for j in range(1, 4 if current_turn.ultimo_turno else 3)
-            )
-
-            if not tiene_datos:
+            if not self.jugador_tiene_datos(request, jugador, current_turn):
                 continue
 
-            tiradas_range = range(1, 4) if current_turn.ultimo_turno else range(1, 3)
-            primera_tirada = None
-            tiradas_completas = True
-            tiradas_jugador = []
-
-            for j in tiradas_range:
-                clave = f'jugador_{jugador.id_jugador}_turno_{current_turn.numero_turno}_tirada_{j}'
-                pinos_derribados = request.POST.get(clave, '')
-
-                if pinos_derribados.isdigit() and current_turn.ultimo_turno == False:
-                    pinos_derribados = int(pinos_derribados)
-                    max_pinos = 10 - (primera_tirada.pinos_deribados if primera_tirada else 0)
-
-                    if 0 <= pinos_derribados <= max_pinos:
-                        tirada = Tirada.objects.create(
-                            pinos_deribados=pinos_derribados,
-                            orden=j,
-                            id_jugador=jugador,
-                            numero_turno=current_turn,
-                        )
-                        tiradas_jugador.append(tirada)
-                        if j == 1:
-                            primera_tirada = tirada
-                    else:
-                        messages.error(request, f"⦁ Turno {current_turn.orden} invalido para el jugador {jugador.nombre_jugador}, tirada {j}: Es imposible tirar mas de 10 pinos.")
-                        tiradas_completas = False
-                        hay_error = True
-                        break
-                elif pinos_derribados == '':
-                    tiradas_completas = False
-                    hay_error = True
-                    break
-                elif current_turn.ultimo_turno:
-                    tirada = Tirada.objects.create(
-                            pinos_deribados=pinos_derribados,
-                            orden=j,
-                            id_jugador=jugador,
-                            numero_turno=current_turn,
-                        )
-                    tiradas_jugador.append(tirada)
-                    tiradas_completas = True
-                    hay_error = False
-                else:
-                    messages.error(request, f"⦁ Turno {current_turn.orden} invalido para el jugador {jugador.nombre_jugador}, fila {j}: Debe ser un numero.")
-                    tiradas_completas = False
-                    hay_error = True
-                    break
-
-            if not tiradas_completas:
-                for tirada in tiradas_jugador:
-                    tirada.delete()
+            tiradas_jugador, hay_error = self.process_jugador_tiradas(request, jugador, current_turn)
+            
+            if hay_error:
+                self.delete_tiradas(tiradas_jugador)
                 messages.error(request, f"⦁ Todas las tiradas deben ser registradas por el jugador {jugador.nombre_jugador} en el turno {current_turn.orden}.")
 
         if not hay_error and self.is_game_finished(partida):
@@ -491,11 +432,92 @@ class TablaView(TemplateView):
 
         return redirect('tabla', partida_id=partida_id)
 
+    def get_partida(self, partida_id):
+        return get_object_or_404(Partida, id_partida=partida_id)
+
+    def get_jugadores(self, partida):
+        return Jugador.objects.filter(id_partida=partida)
+
+    def get_turnos(self, partida):
+        return Turno.objects.filter(id_partida=partida).order_by('numero_turno')
+
+    def get_tiradas(self, turnos):
+        return Tirada.objects.filter(numero_turno__in=turnos)
+
+    def process_tiradas(self, jugadores, tiradas):
+        tiradas_dict = {}
+        puntaje_jugador = {jugador.id_jugador: 0 for jugador in jugadores}
+        for tirada in tiradas:
+            key = f"{tirada.id_jugador.id_jugador}-{tirada.numero_turno.numero_turno}"
+            if key not in tiradas_dict:
+                tiradas_dict[key] = []
+            tiradas_dict[key].append(tirada)
+            puntaje_jugador[tirada.id_jugador.id_jugador] += tirada.pinos_deribados
+        return tiradas_dict, puntaje_jugador
+
+    def jugador_tiene_datos(self, request, jugador, current_turn):
+        return any(
+            request.POST.get(f'jugador_{jugador.id_jugador}_turno_{current_turn.numero_turno}_tirada_{j}', '')
+            for j in range(1, 4 if current_turn.ultimo_turno else 3)
+        )
+
+    def process_jugador_tiradas(self, request, jugador, current_turn):
+        tiradas_range = range(1, 4) if current_turn.ultimo_turno else range(1, 3)
+        primera_tirada = None
+        tiradas_jugador = []
+        hay_error = False
+
+        for j in tiradas_range:
+            clave = f'jugador_{jugador.id_jugador}_turno_{current_turn.numero_turno}_tirada_{j}'
+            pinos_derribados = request.POST.get(clave, '')
+
+            if self.is_valid_tirada(pinos_derribados, current_turn, primera_tirada):
+                pinos_derribados = int(pinos_derribados) if pinos_derribados.isdigit() else 0
+                tirada = self.create_tirada(jugador, current_turn, j, pinos_derribados)
+                tiradas_jugador.append(tirada)
+                if j == 1:
+                    primera_tirada = tirada
+            else:
+                hay_error = True
+                self.add_error_message(request, jugador, current_turn, j, pinos_derribados)
+                break
+
+        return tiradas_jugador, hay_error
+
+    def is_valid_tirada(self, pinos_derribados, current_turn, primera_tirada):
+        if current_turn.ultimo_turno:
+            return True
+        if pinos_derribados.isdigit():
+            pinos_derribados = int(pinos_derribados)
+            max_pinos = 10 - (primera_tirada.pinos_deribados if primera_tirada else 0)
+            return 0 <= pinos_derribados <= max_pinos
+        return False
+
+    def create_tirada(self, jugador, current_turn, orden, pinos_derribados):
+        return Tirada.objects.create(
+            pinos_deribados=int(pinos_derribados),
+            orden=orden,
+            id_jugador=jugador,
+            numero_turno=current_turn,
+        )
+
+    def add_error_message(self, request, jugador, current_turn, j, pinos_derribados):
+        if pinos_derribados == '':
+            messages.error(request, f"⦁ Turno {current_turn.orden} invalido para el jugador {jugador.nombre_jugador}, tirada {j}: El campo no puede estar vacío.")
+        elif not current_turn.ultimo_turno:
+            messages.error(request, f"⦁ Turno {current_turn.orden} invalido para el jugador {jugador.nombre_jugador}, tirada {j}: Es imposible tirar mas de 10 pinos.")
+        else:
+            messages.error(request, f"⦁ Turno {current_turn.orden} invalido para el jugador {jugador.nombre_jugador}, tirada {j}: Debe ser un numero.")
+
+    def delete_tiradas(self, tiradas):
+        for tirada in tiradas:
+            tirada.delete()
+
     def get_current_turn(self, partida):
-        turnos = Turno.objects.filter(id_partida=partida).order_by('numero_turno')
-        tiradas = Tirada.objects.filter(numero_turno__in=turnos)
+        turnos = self.get_turnos(partida)
+        tiradas = self.get_tiradas(turnos)
         tiradas_count = tiradas.count()
-        jugadores_count = Jugador.objects.filter(id_partida=partida).count()
+        jugadores_count = self.get_jugadores(partida).count()
         
         current_turn_index = tiradas_count // (2 * jugadores_count)
         if current_turn_index < len(turnos):
@@ -504,22 +526,21 @@ class TablaView(TemplateView):
             return turnos.last()
 
     def is_game_finished(self, partida):
-        turnos = Turno.objects.filter(id_partida=partida)
-        jugadores = Jugador.objects.filter(id_partida=partida)
-        tiradas = Tirada.objects.filter(numero_turno__in=turnos)
+        turnos = self.get_turnos(partida)
+        jugadores = self.get_jugadores(partida)
+        tiradas = self.get_tiradas(turnos)
 
         expected_tiradas = sum(3 if turno.ultimo_turno else 2 for turno in turnos) * len(jugadores)
         return tiradas.count() >= expected_tiradas
 
     def finalize_game(self, partida):
-        jugadores = Jugador.objects.filter(id_partida=partida)
+        jugadores = self.get_jugadores(partida)
         puntajes = {jugador: sum(tirada.pinos_deribados for tirada in Tirada.objects.filter(id_jugador=jugador)) for jugador in jugadores}
         ganador = max(puntajes, key=puntajes.get)
 
         partida.ganador = ganador
         partida.estado = EstadoPartida.objects.get(estado='Finalizada')
         partida.save()
-
 class CustomLoginView(LoginView):
     template_name = 'login.html'
     authentication_form = CustomLoginForm
@@ -559,69 +580,89 @@ class ReservaView(CreateView):
         return super().form_valid(form)
 
 class JugadoresView(View):
-    def get(self, request, partida_id, reserva_id):
-        # Obtener la capacidad máxima de la pista
-        reserva = Reserva.objects.get(id_reserva=reserva_id)
-        pista = PistaBowling.objects.get(id_pista = reserva.id_pista.id_pista)
-        capacidad_maxima = pista.capacidad_maxima  
-        
-        return render(request, 'cant_jugadores.html', {'capacidad_maxima': capacidad_maxima})
+    template_name = 'cant_jugadores.html'
 
-    def post(self, request, partida_id, reserva_id):
+    def get(self, request: HttpRequest, partida_id: int, reserva_id: int):
+        capacidad_maxima = self.get_capacidad_maxima(reserva_id)
+        return render(request, self.template_name, {'capacidad_maxima': capacidad_maxima})
+
+    def post(self, request: HttpRequest, partida_id: int, reserva_id: int):
         cantidad_jugadores = request.POST.get('cantidad_jugadores')
         if cantidad_jugadores:
-            request.session['cantidad_jugadores'] = int(cantidad_jugadores)  # Asegúrate de almacenar como int
-            
-            # Actualizar la cantidad de jugadores en la partida correspondiente
-            partida = Partida.objects.filter(id_partida=partida_id).first()  # Obtener la partida usando el id_partida
-            if partida:
-                partida.cant_jugadores = int(cantidad_jugadores)
-                partida.save()
+            self.store_cantidad_jugadores(request, cantidad_jugadores)
+            self.update_partida(partida_id, cantidad_jugadores)
+            return redirect('nombres_jugadores', partida_id=partida_id, reserva_id=reserva_id)
+        return redirect('jugadores', partida_id=partida_id, reserva_id=reserva_id)
 
-            return redirect('nombres_jugadores', partida_id=partida_id, reserva_id=reserva_id)  # Redirige a la vista de nombres de jugadores
-        return redirect('jugadores', partida_id=partida_id, reserva_id=reserva_id)  # Redirigir si no hay cantidad válida
+    def get_capacidad_maxima(self, reserva_id: int) -> int:
+        reserva = Reserva.objects.get(id_reserva=reserva_id)
+        pista = PistaBowling.objects.get(id_pista=reserva.id_pista.id_pista)
+        return pista.capacidad_maxima
 
-class NombresJugadoresView(View):
-    def get(self, request, partida_id, reserva_id):
-        cantidad_jugadores = request.session.get('cantidad_jugadores', 0)
-        if isinstance(cantidad_jugadores, int) and cantidad_jugadores > 0:
-            context = {
-                'cantidad_jugadores': cantidad_jugadores,
-                'jugadores_range': range(1, cantidad_jugadores + 1),
-                'partida_id': partida_id,
-                'reserva_id': reserva_id
-            }
-            return render(request, 'nombres_jugadores.html', context)
-        else:
-            return redirect('jugadores', partida_id=partida_id, reserva_id=reserva_id)
+    def store_cantidad_jugadores(self, request: HttpRequest, cantidad_jugadores: str):
+        request.session['cantidad_jugadores'] = int(cantidad_jugadores)
 
-    def post(self, request, partida_id, reserva_id):
-        cantidad_jugadores = request.session.get('cantidad_jugadores', 0)
+    def update_partida(self, partida_id: int, cantidad_jugadores: str):
+        partida = Partida.objects.filter(id_partida=partida_id).first()
+        if partida:
+            partida.cant_jugadores = int(cantidad_jugadores)
+            partida.save()
 
+class NombresJugadoresView(View):#MOD
+    template_name = 'nombres_jugadores.html'
+
+    def get(self, request: HttpRequest, partida_id: int, reserva_id: int):
+        cantidad_jugadores = self.get_cantidad_jugadores(request)
+        if self.is_valid_cantidad_jugadores(cantidad_jugadores):
+            context = self.get_context(cantidad_jugadores, partida_id, reserva_id)
+            return render(request, self.template_name, context)
+        return redirect('jugadores', partida_id=partida_id, reserva_id=reserva_id)
+
+    def post(self, request: HttpRequest, partida_id: int, reserva_id: int):
         if not reserva_id:
             return redirect('jugadores', partida_id=partida_id, reserva_id=reserva_id)
 
         partida = get_object_or_404(Partida, id_partida=partida_id)
+        cantidad_jugadores = self.get_cantidad_jugadores(request)
 
+        self.create_jugadores(request, partida, cantidad_jugadores)
+        self.create_turnos(partida)
+        self.update_partida_estado(partida)
+
+        return redirect('mi_reserva', reserva_id=reserva_id)
+
+    def get_cantidad_jugadores(self, request: HttpRequest) -> int:
+        return request.session.get('cantidad_jugadores', 0)
+
+    def is_valid_cantidad_jugadores(self, cantidad_jugadores: int) -> bool:
+        return isinstance(cantidad_jugadores, int) and cantidad_jugadores > 0
+
+    def get_context(self, cantidad_jugadores: int, partida_id: int, reserva_id: int) -> dict:
+        return {
+            'cantidad_jugadores': cantidad_jugadores,
+            'jugadores_range': range(1, cantidad_jugadores + 1),
+            'partida_id': partida_id,
+            'reserva_id': reserva_id
+        }
+
+    def create_jugadores(self, request: HttpRequest, partida: Partida, cantidad_jugadores: int):
         for i in range(1, cantidad_jugadores + 1):
             nombre_jugador = request.POST.get(f'jugador{i}')
             if nombre_jugador:
-                jugador = Jugador(nombre_jugador=nombre_jugador, orden=i, id_partida=partida)
-                jugador.save()
-        
+                Jugador.objects.create(nombre_jugador=nombre_jugador, orden=i, id_partida=partida)
+
+    def create_turnos(self, partida: Partida):
         for i in range(1, 11):
             Turno.objects.create(
                 id_partida=partida,
                 orden=i,
                 ultimo_turno=(i == 10)
             )
-        
-        # Update the game state to 'En proceso'
+
+    def update_partida_estado(self, partida: Partida):
         estado_en_proceso = EstadoPartida.objects.get(estado='En proceso')
         partida.estado = estado_en_proceso
         partida.save()
-
-        return redirect('mi_reserva', reserva_id=reserva_id)
 
 def iniciar_partida(request, partida_id):
     partida = get_object_or_404(Partida, id_partida=partida_id)
@@ -630,25 +671,34 @@ def iniciar_partida(request, partida_id):
 
     return redirect('/jugadores/'+str(partida.id_partida)+'/' + str(id_reserva))
 
-class AgregarPedidoView(View):
-    def post(self, request, reserva_id):
-        reserva = get_object_or_404(Reserva, pk=reserva_id, id_cliente=request.user.id_cliente)
-
-        # Aquí asumimos que los datos del formulario vienen en un formato específico
+class AgregarPedidoView(View):#MOD
+    def post(self, request: HttpRequest, reserva_id: int):
+        reserva = self.get_reserva(request, reserva_id)
         productos = request.POST.getlist('producto')
         cantidades = request.POST.getlist('cantidad')
 
-        if len(productos) != len(cantidades):
+        if not self.validate_productos_cantidades(productos, cantidades):
             return JsonResponse({'success': False, 'message': 'Los productos y cantidades deben coincidir.'})
 
-        # Crear el pedido
-        pedido = Pedido.objects.create(
+        pedido = self.create_pedido(reserva)
+        self.create_pedido_productos(pedido, productos, cantidades)
+
+        return redirect(reverse('mi_reserva', args=[reserva_id]))
+
+    def get_reserva(self, request: HttpRequest, reserva_id: int) -> Reserva:
+        return get_object_or_404(Reserva, pk=reserva_id, id_cliente=request.user.id_cliente)
+
+    def validate_productos_cantidades(self, productos: list, cantidades: list) -> bool:
+        return len(productos) == len(cantidades)
+
+    def create_pedido(self, reserva: Reserva) -> Pedido:
+        return Pedido.objects.create(
             id_reserva=reserva,
             fecha_hora_pedido=timezone.now(),
-            estado=EstadoPedido.objects.get(estado='Pedido Confirmado')  # Asignar estado inicial
+            estado=EstadoPedido.objects.get(estado='Pedido Confirmado')
         )
 
-        # Guardar cada producto y cantidad en PedidoXProducto
+    def create_pedido_productos(self, pedido: Pedido, productos: list, cantidades: list):
         for producto_id, cantidad in zip(productos, cantidades):
             PedidoXProducto.objects.create(
                 id_pedido=pedido,
@@ -656,7 +706,6 @@ class AgregarPedidoView(View):
                 cantidad=int(cantidad)
             )
 
-        return redirect(reverse('mi_reserva', args=[reserva_id]))
 
 def finalizar_reserva(request, reserva_id):
     if request.method == 'POST':
