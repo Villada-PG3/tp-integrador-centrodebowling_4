@@ -138,7 +138,6 @@ from django.views import View
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from .models import Reserva, Pedido, PedidoXProducto, EstadoPedido
-from .forms import MultiplePedidoForm
 from django.utils import timezone
 
 
@@ -234,7 +233,6 @@ def cancelar_reserva(request, pk):
 
 class ContactoView(TemplateView): #modularizada
     template_name = 'contacto.html'
-
 
 class mi_reserva(TemplateView): #mod
     template_name = 'menu_partidas_bar.html'
@@ -389,7 +387,8 @@ class mi_reserva(TemplateView): #mod
             id_producto=producto,
             defaults={'cantidad': 0}
         )
-class TablaView(TemplateView):#MOD
+
+class TablaView(TemplateView):
     template_name = 'tabla.html'
 
     def get_context_data(self, **kwargs):
@@ -415,7 +414,6 @@ class TablaView(TemplateView):#MOD
             'puntaje_jugador': puntaje_jugador,
             'current_turn': current_turn,
         })
-
         return context
 
     def post(self, request, partida_id):
@@ -434,9 +432,11 @@ class TablaView(TemplateView):#MOD
                 self.delete_tiradas(tiradas_jugador)
                 messages.error(request, f"⦁ Todas las tiradas deben ser registradas por el jugador {jugador.nombre_jugador} en el turno {current_turn.orden}.")
 
-        if not hay_error and self.is_game_finished(partida):
-            self.finalize_game(partida)
-            return redirect('mi_reserva', reserva_id=partida.id_reserva.id_reserva)
+        if not hay_error:
+            self.update_scores(partida)
+            if self.is_game_finished(partida):
+                self.finalize_game(partida)
+                return redirect('mi_reserva', reserva_id=partida.id_reserva.id_reserva)
 
         return redirect('tabla', partida_id=partida_id)
 
@@ -455,13 +455,75 @@ class TablaView(TemplateView):#MOD
     def process_tiradas(self, jugadores, tiradas):
         tiradas_dict = {}
         puntaje_jugador = {jugador.id_jugador: 0 for jugador in jugadores}
-        for tirada in tiradas:
-            key = f"{tirada.id_jugador.id_jugador}-{tirada.numero_turno.numero_turno}"
-            if key not in tiradas_dict:
-                tiradas_dict[key] = []
-            tiradas_dict[key].append(tirada)
-            puntaje_jugador[tirada.id_jugador.id_jugador] += tirada.pinos_deribados
+        
+        for jugador in jugadores:
+            frames = {}
+            running_total = 0
+            
+            for tirada in tiradas.filter(id_jugador=jugador).order_by('numero_turno__numero_turno', 'orden'):
+                frame_key = f"{jugador.id_jugador}-{tirada.numero_turno.numero_turno}"
+                if frame_key not in frames:
+                    frames[frame_key] = []
+                frames[frame_key].append(tirada)
+                
+                if len(frames[frame_key]) == 2 or (len(frames[frame_key]) == 1 and tirada.pinos_deribados == 10):
+                    frame_score = self.calculate_frame_score(frames, frame_key, tiradas)
+                    running_total += frame_score
+                    puntaje_jugador[jugador.id_jugador] = running_total
+                
+                tiradas_dict[frame_key] = self.format_frame_tiradas(frames[frame_key])
+        
         return tiradas_dict, puntaje_jugador
+
+    def calculate_frame_score(self, frames, frame_key, tiradas):
+        current_frame = frames[frame_key]
+        frame_num = int(frame_key.split('-')[1])
+        
+        frame_sum = sum(t.pinos_deribados for t in current_frame)
+        
+        if len(current_frame) == 1 and current_frame[0].pinos_deribados == 10:
+            next_throws = self.get_next_throws(frames, frame_key, tiradas, 2)
+            return 10 + sum(t.pinos_deribados for t in next_throws[:2])
+        elif frame_sum == 10:
+            next_throws = self.get_next_throws(frames, frame_key, tiradas, 1)
+            return 10 + (next_throws[0].pinos_deribados if next_throws else 0)
+        else:
+            return frame_sum
+
+    def get_next_throws(self, frames, frame_key, tiradas, count):
+        jugador_id, frame_num = frame_key.split('-')
+        frame_num = int(frame_num)
+        
+        next_throws = []
+        for tirada in tiradas.filter(
+            id_jugador__id_jugador=jugador_id,
+            numero_turno__numero_turno__gt=frame_num
+        ).order_by('numero_turno__numero_turno', 'orden'):
+            next_throws.append(tirada)
+            if len(next_throws) == count:
+                break
+        
+        return next_throws
+
+    def format_frame_tiradas(self, tiradas):
+        if not tiradas:
+            return []
+        
+        formatted_tiradas = []
+        frame_sum = sum(t.pinos_deribados for t in tiradas)
+        
+        if len(tiradas) == 1 and tiradas[0].pinos_deribados == 10:
+            formatted_tiradas.append(tiradas[0])
+            formatted_tiradas[0].display_value = 'X'
+        elif frame_sum == 10:
+            formatted_tiradas.extend(tiradas)
+            formatted_tiradas[-1].display_value = '/'
+        else:
+            for tirada in tiradas:
+                tirada.display_value = str(tirada.pinos_deribados) if tirada.pinos_deribados > 0 else '-'
+                formatted_tiradas.append(tirada)
+        
+        return formatted_tiradas
 
     def jugador_tiene_datos(self, request, jugador, current_turn):
         return any(
@@ -493,13 +555,20 @@ class TablaView(TemplateView):#MOD
         return tiradas_jugador, hay_error
 
     def is_valid_tirada(self, pinos_derribados, current_turn, primera_tirada):
-        if current_turn.ultimo_turno:
+        if not pinos_derribados.isdigit():
+            return False
+            
+        pinos = int(pinos_derribados)
+        if pinos < 0 or pinos > 10:
+            return False
+            
+        if primera_tirada is None or current_turn.ultimo_turno:
             return True
-        if pinos_derribados.isdigit():
-            pinos_derribados = int(pinos_derribados)
-            max_pinos = 10 - (primera_tirada.pinos_deribados if primera_tirada else 0)
-            return 0 <= pinos_derribados <= max_pinos
-        return False
+            
+        if primera_tirada.pinos_deribados + pinos > 10:
+            return False
+            
+        return True
 
     def create_tirada(self, jugador, current_turn, orden, pinos_derribados):
         return Tirada.objects.create(
@@ -511,11 +580,11 @@ class TablaView(TemplateView):#MOD
 
     def add_error_message(self, request, jugador, current_turn, j, pinos_derribados):
         if pinos_derribados == '':
-            messages.error(request, f"⦁ Turno {current_turn.orden} invalido para el jugador {jugador.nombre_jugador}, tirada {j}: El campo no puede estar vacío.")
+            messages.error(request, f"⦁ Turno {current_turn.orden} inválido para el jugador {jugador.nombre_jugador}, tirada {j}: El campo no puede estar vacío.")
         elif not current_turn.ultimo_turno:
-            messages.error(request, f"⦁ Turno {current_turn.orden} invalido para el jugador {jugador.nombre_jugador}, tirada {j}: Es imposible tirar mas de 10 pinos.")
+            messages.error(request, f"⦁ Turno {current_turn.orden} inválido para el jugador {jugador.nombre_jugador}, tirada {j}: Es imposible tirar más de 10 pinos.")
         else:
-            messages.error(request, f"⦁ Turno {current_turn.orden} invalido para el jugador {jugador.nombre_jugador}, tirada {j}: Debe ser un numero.")
+            messages.error(request, f"⦁ Turno {current_turn.orden} inválido para el jugador {jugador.nombre_jugador}, tirada {j}: Debe ser un número.")
 
     def delete_tiradas(self, tiradas):
         for tirada in tiradas:
@@ -541,14 +610,27 @@ class TablaView(TemplateView):#MOD
         expected_tiradas = sum(3 if turno.ultimo_turno else 2 for turno in turnos) * len(jugadores)
         return tiradas.count() >= expected_tiradas
 
+    def update_scores(self, partida):
+        jugadores = self.get_jugadores(partida)
+        turnos = self.get_turnos(partida)
+        tiradas = self.get_tiradas(turnos)
+        _, puntaje_jugador = self.process_tiradas(jugadores, tiradas)
+        
+        for jugador in jugadores:
+            jugador.puntaje_total = puntaje_jugador[jugador.id_jugador]
+            jugador.save()
+
     def finalize_game(self, partida):
         jugadores = self.get_jugadores(partida)
-        puntajes = {jugador: sum(tirada.pinos_deribados for tirada in Tirada.objects.filter(id_jugador=jugador)) for jugador in jugadores}
+        turnos = self.get_turnos(partida)
+        tiradas = self.get_tiradas(turnos)
+        _, puntajes = self.process_tiradas(jugadores, tiradas)
         ganador = max(puntajes, key=puntajes.get)
 
-        partida.ganador = ganador
+        partida.ganador = Jugador.objects.get(id_jugador=ganador)
         partida.estado = EstadoPartida.objects.get(estado='Finalizada')
         partida.save()
+
 class CustomLoginView(LoginView):
     template_name = 'login.html'
     authentication_form = CustomLoginForm
