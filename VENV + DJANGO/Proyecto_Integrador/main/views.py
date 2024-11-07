@@ -221,6 +221,11 @@ def cancelar_reserva(request, pk):
 class ContactoView(TemplateView):
     template_name = 'contacto.html'
 
+from django.views.generic import TemplateView
+from django.shortcuts import get_object_or_404, redirect
+from django.http import HttpResponseNotFound
+from .models import Reserva, Pedido, PedidoXProducto, Producto, HistorialEstado, Partida, EstadoPartida, Jugador
+
 class mi_reserva(TemplateView):
     template_name = 'menu_partidas_bar.html'
 
@@ -229,78 +234,151 @@ class mi_reserva(TemplateView):
         reserva_id = self.kwargs['reserva_id']
 
         try:
-            reserva = get_object_or_404(Reserva, pk=reserva_id, id_cliente=self.request.user.id_cliente)
-            pedidos = Pedido.objects.filter(id_reserva=reserva.id_reserva)
+            reserva = self.get_reserva(reserva_id)
+            pedidos = self.get_pedidos(reserva)
+            estado_reserva = self.get_estado_reserva(reserva)
+            partidas = self.get_or_create_partidas(reserva)
+            self.update_partidas_status(partidas, estado_reserva)
+            total_a_pagar = self.calculate_total_to_pay(pedidos)
 
-            # Obtener el último estado de la reserva
-            try:
-                ultimo_estado = reserva.historialestado_set.latest('fecha_hora_inicio')
-                estado_reserva = ultimo_estado.estado.estado
-            except HistorialEstado.DoesNotExist:
-                estado_reserva = 'Confirmada'
-
-            # Obtener o crear las 3 partidas para la reserva
-            partidas = list(Partida.objects.filter(id_reserva=reserva).order_by('id_partida'))
-            if len(partidas) < 3:
-                estado_bloqueado = EstadoPartida.objects.get(estado='Bloqueada')
-                for _ in range(3 - len(partidas)):
-                    nueva_partida = Partida.objects.create(
-                        id_pista=reserva.id_pista,
-                        id_reserva=reserva,
-                        estado=estado_bloqueado,
-                        cant_jugadores=0
-                    )
-                    partidas.append(nueva_partida)
-
-            # Actualizar los estados de las partidas
-            estado_disponible = EstadoPartida.objects.get(estado='Disponible')
-            estado_bloqueado = EstadoPartida.objects.get(estado='Bloqueada')
-            estado_en_proceso = EstadoPartida.objects.get(estado='En proceso')
-            estado_finalizado = EstadoPartida.objects.get(estado='Finalizada')
-
-            for i, partida in enumerate(partidas):
-                if estado_reserva == 'En curso':
-                    if i == 0 and partida.estado != estado_finalizado and partida.estado != estado_en_proceso:
-                        partida.estado = estado_disponible
-                    elif i > 0 and partidas[i-1].estado == estado_finalizado and partida.estado != estado_finalizado and partida.estado != estado_en_proceso:
-                        partida.estado = estado_disponible
-                    elif partida.estado != estado_finalizado and partida.estado != estado_en_proceso:
-                        partida.estado = estado_bloqueado
-                else:
-                    if partida.estado != estado_finalizado and partida.estado != estado_en_proceso:
-                        partida.estado = estado_bloqueado
-
-                if partida.estado == estado_finalizado:
-                    jugadores = Jugador.objects.filter(id_partida=partida)
-                    if jugadores.exists():
-                        puntajes = {jugador: sum(tirada.pinos_deribados for tirada in jugador.tirada_set.all()) for jugador in jugadores}
-                        ganador = max(puntajes, key=puntajes.get)
-                        partida.ganador = ganador
-
-                partida.save()
-
-            # Calcular el total a pagar por todos los pedidos
-            total_a_pagar = 0
-            for pedido in pedidos:
-                for item in pedido.pedidoxproducto_set.all():
-                    total_a_pagar += item.cantidad * item.id_producto.precio
-
-            context['reserva'] = reserva
-            context['partidas'] = partidas
-            context['pedidos'] = pedidos
-            context['totalAPagar'] = total_a_pagar
-            context['estado_reserva'] = estado_reserva
-            context['productos'] = Producto.objects.all()
-            
+            context.update({
+                'reserva': reserva,
+                'partidas': partidas,
+                'pedidos': pedidos,
+                'totalAPagar': total_a_pagar,
+                'estado_reserva': estado_reserva,
+                'productos': self.get_all_products()
+            })
         except Reserva.DoesNotExist:
-            context['reserva'] = None
-            context['pedidos'] = None
-            context['partidas'] = []
-            context['estado_reserva'] = None
+            context.update(self.get_empty_context())
         
         return context
 
+    def get_reserva(self, reserva_id):
+        return get_object_or_404(Reserva, pk=reserva_id, id_cliente=self.request.user.id_cliente)
 
+    def get_pedidos(self, reserva):
+        return Pedido.objects.filter(id_reserva=reserva.id_reserva)
+
+    def get_estado_reserva(self, reserva):
+        try:
+            ultimo_estado = reserva.historialestado_set.latest('fecha_hora_inicio')
+            return ultimo_estado.estado.estado
+        except HistorialEstado.DoesNotExist:
+            return 'Confirmada'
+
+    def get_or_create_partidas(self, reserva):
+        partidas = list(Partida.objects.filter(id_reserva=reserva).order_by('id_partida'))
+        if len(partidas) < 3:
+            self.create_missing_partidas(reserva, partidas)
+        return partidas
+
+    def create_missing_partidas(self, reserva, partidas):
+        estado_bloqueado = EstadoPartida.objects.get(estado='Bloqueada')
+        for _ in range(3 - len(partidas)):
+            nueva_partida = Partida.objects.create(
+                id_pista=reserva.id_pista,
+                id_reserva=reserva,
+                estado=estado_bloqueado,
+                cant_jugadores=0
+            )
+            partidas.append(nueva_partida)
+
+    def update_partidas_status(self, partidas, estado_reserva):
+        estado_disponible = EstadoPartida.objects.get(estado='Disponible')
+        estado_bloqueado = EstadoPartida.objects.get(estado='Bloqueada')
+        estado_en_proceso = EstadoPartida.objects.get(estado='En proceso')
+        estado_finalizado = EstadoPartida.objects.get(estado='Finalizada')
+
+        for i, partida in enumerate(partidas):
+            self.update_partida_status(partida, i, partidas, estado_reserva, estado_disponible, estado_bloqueado, estado_en_proceso, estado_finalizado)
+
+    def update_partida_status(self, partida, index, partidas, estado_reserva, estado_disponible, estado_bloqueado, estado_en_proceso, estado_finalizado):
+        if estado_reserva == 'En curso':
+            self.update_partida_status_en_curso(partida, index, partidas, estado_disponible, estado_bloqueado, estado_finalizado, estado_en_proceso)
+        else:
+            self.update_partida_status_not_en_curso(partida, estado_bloqueado, estado_finalizado, estado_en_proceso)
+
+        if partida.estado == estado_finalizado:
+            self.set_partida_winner(partida)
+
+        partida.save()
+
+    def update_partida_status_en_curso(self, partida, index, partidas, estado_disponible, estado_bloqueado, estado_finalizado, estado_en_proceso):
+        if index == 0 and partida.estado not in [estado_finalizado, estado_en_proceso]:
+            partida.estado = estado_disponible
+        elif index > 0 and partidas[index-1].estado == estado_finalizado and partida.estado not in [estado_finalizado, estado_en_proceso]:
+            partida.estado = estado_disponible
+        elif partida.estado not in [estado_finalizado, estado_en_proceso]:
+            partida.estado = estado_bloqueado
+
+    def update_partida_status_not_en_curso(self, partida, estado_bloqueado, estado_finalizado, estado_en_proceso):
+        if partida.estado not in [estado_finalizado, estado_en_proceso]:
+            partida.estado = estado_bloqueado
+
+    def set_partida_winner(self, partida):
+        jugadores = Jugador.objects.filter(id_partida=partida)
+        if jugadores.exists():
+            puntajes = self.calculate_player_scores(jugadores)
+            ganador = max(puntajes, key=puntajes.get)
+            partida.ganador = ganador
+
+    def calculate_player_scores(self, jugadores):
+        return {jugador: sum(tirada.pinos_deribados for tirada in jugador.tirada_set.all()) for jugador in jugadores}
+
+    def calculate_total_to_pay(self, pedidos):
+        return sum(
+            item.cantidad * item.id_producto.precio
+            for pedido in pedidos
+            for item in pedido.pedidoxproducto_set.all()
+        )
+
+    def get_all_products(self):
+        return Producto.objects.all()
+
+    def get_empty_context(self):
+        return {
+            'reserva': None,
+            'pedidos': None,
+            'partidas': [],
+            'estado_reserva': None
+        }
+
+    def post(self, request, *args, **kwargs):
+        reserva_id = self.kwargs['reserva_id']
+        producto_id = request.POST.get('producto_id')
+        cantidad = int(request.POST.get('cantidad', 1))
+
+        try:
+            reserva = self.get_reserva(reserva_id)
+            producto = self.get_producto(producto_id)
+            pedido = self.get_or_create_pedido(reserva)
+            self.update_or_create_pedido_producto(pedido, producto, cantidad)
+            return redirect('mi_reserva', reserva_id=reserva_id)
+        except Reserva.DoesNotExist:
+            return HttpResponseNotFound("Reserva no encontrada")
+
+    def get_producto(self, producto_id):
+        return get_object_or_404(Producto, pk=producto_id)
+
+    def get_or_create_pedido(self, reserva):
+        pedido, _ = Pedido.objects.get_or_create(id_reserva=reserva)
+        return pedido
+
+    def update_or_create_pedido_producto(self, pedido, producto, cantidad):
+        pedido_producto, created = self.get_or_create_pedido_producto(pedido, producto)
+        if created:
+            pedido_producto.cantidad = cantidad
+        else:
+            pedido_producto.cantidad += cantidad
+        pedido_producto.save()
+
+    def get_or_create_pedido_producto(self, pedido, producto):
+        return PedidoXProducto.objects.get_or_create(
+            id_pedido=pedido,
+            id_producto=producto,
+            defaults={'cantidad': 0}
+        )
 class TablaView(TemplateView):
     template_name = 'tabla.html'
 
@@ -610,6 +688,14 @@ def finalizar_reserva(request, reserva_id):
         return redirect(('ver_reservas'))
     else:
         return redirect('mi_reserva', reserva_id=reserva_id)
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.views.generic import ListView, UpdateView, DeleteView
+from django.shortcuts import get_object_or_404
+from django.urls import reverse_lazy
+from django.http import HttpResponseRedirect
+from django.contrib import messages
+from django.utils import timezone
+
 class VerReservasView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = Reserva
     template_name = 'ver.html'
@@ -619,16 +705,25 @@ class VerReservasView(LoginRequiredMixin, UserPassesTestMixin, ListView):
         return self.request.user.is_superuser
 
     def get_queryset(self):
+        return self.get_ordered_reservas()
+
+    def get_ordered_reservas(self):
         return Reserva.objects.all().order_by('-fecha_hora_reserva')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        for reserva in context['reservas']:
-            try:
-                reserva.ultimo_estado = reserva.historialestado_set.latest('fecha_hora_inicio')
-            except HistorialEstado.DoesNotExist:
-                reserva.ultimo_estado = None
+        self.add_ultimo_estado_to_reservas(context['reservas'])
         return context
+
+    def add_ultimo_estado_to_reservas(self, reservas):
+        for reserva in reservas:
+            reserva.ultimo_estado = self.get_ultimo_estado(reserva)
+
+    def get_ultimo_estado(self, reserva):
+        try:
+            return reserva.historialestado_set.latest('fecha_hora_inicio')
+        except HistorialEstado.DoesNotExist:
+            return None
 
 class EditarReservaView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Reserva
@@ -641,28 +736,41 @@ class EditarReservaView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['estados'] = EstadoReserva.objects.all()
+        context['estados'] = self.get_all_estados()
         return context
+
+    def get_all_estados(self):
+        return EstadoReserva.objects.all()
 
     def form_valid(self, form):
         reserva = form.save(commit=False)
         nuevo_estado = form.cleaned_data.get('nuevo_estado')
-        if HistorialEstado.objects.filter(id_reserva = reserva, estado = nuevo_estado).exists():
-            HistorialEstado.objects.filter(id_reserva = reserva, estado = nuevo_estado).delete()
-        
+        self.handle_historial_estado(reserva, nuevo_estado)
+        self.set_success_message(nuevo_estado)
+        return super().form_valid(form)
+
+    def handle_historial_estado(self, reserva, nuevo_estado):
+        self.delete_existing_historial(reserva, nuevo_estado)
         if nuevo_estado:
-            HistorialEstado.objects.create(
-                id_reserva=reserva,
-                estado=nuevo_estado,
-                fecha_hora_inicio=timezone.now(),
-                fecha_hora_fin=reserva.fecha_hora_reserva
-            )
+            self.create_new_historial(reserva, nuevo_estado)
+
+    def delete_existing_historial(self, reserva, nuevo_estado):
+        if HistorialEstado.objects.filter(id_reserva=reserva, estado=nuevo_estado).exists():
+            HistorialEstado.objects.filter(id_reserva=reserva, estado=nuevo_estado).delete()
+
+    def create_new_historial(self, reserva, nuevo_estado):
+        HistorialEstado.objects.create(
+            id_reserva=reserva,
+            estado=nuevo_estado,
+            fecha_hora_inicio=timezone.now(),
+            fecha_hora_fin=reserva.fecha_hora_reserva
+        )
+
+    def set_success_message(self, nuevo_estado):
+        if nuevo_estado:
             messages.success(self.request, f'Reserva actualizada y estado cambiado a {nuevo_estado}.')
         else:
             messages.success(self.request, 'Reserva actualizada exitosamente.')
-        
-        return super().form_valid(form)
-
 
 class VerPedidosView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = Pedido
@@ -673,22 +781,29 @@ class VerPedidosView(LoginRequiredMixin, UserPassesTestMixin, ListView):
         return self.request.user.is_superuser
 
     def get_queryset(self):
+        return self.get_ordered_pedidos()
+
+    def get_ordered_pedidos(self):
         return Pedido.objects.all().order_by('-fecha_hora_pedido')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        pedidos = context['pedidos']
-        for pedido in pedidos:
-            pedido_productos = PedidoXProducto.objects.filter(id_pedido=pedido)
-            pedido.productos = [
-                {
-                    'nombre': pp.id_producto.nombre,
-                    'cantidad': pp.cantidad
-                }
-                for pp in pedido_productos
-            ]
+        self.add_productos_to_pedidos(context['pedidos'])
         return context
-    
+
+    def add_productos_to_pedidos(self, pedidos):
+        for pedido in pedidos:
+            pedido.productos = self.get_productos_for_pedido(pedido)
+
+    def get_productos_for_pedido(self, pedido):
+        pedido_productos = PedidoXProducto.objects.filter(id_pedido=pedido)
+        return [self.format_producto(pp) for pp in pedido_productos]
+
+    def format_producto(self, pedido_producto):
+        return {
+            'nombre': pedido_producto.id_producto.nombre,
+            'cantidad': pedido_producto.cantidad
+        }
 
 class EditarPedidoView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Pedido
@@ -701,8 +816,11 @@ class EditarPedidoView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = 'Editar Pedido'
+        context['title'] = self.get_title()
         return context
+
+    def get_title(self):
+        return 'Editar Pedido'
 
     def form_valid(self, form):
         pedido = form.save(commit=False)
@@ -719,15 +837,22 @@ class EliminarPedidoView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     def get_object(self, queryset=None):
         id_pedido = self.kwargs.get('pk')
+        return self.get_pedido_by_id(id_pedido)
+
+    def get_pedido_by_id(self, id_pedido):
         return get_object_or_404(Pedido, id_pedido=id_pedido)
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
         success_url = self.get_success_url()
+        self.delete_pedido()
+        return self.redirect_to_success_url(success_url)
+
+    def delete_pedido(self):
         self.object.delete()
+
+    def redirect_to_success_url(self, success_url):
         return HttpResponseRedirect(success_url)
-
-
 
 class VerPistasView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = PistaBowling
@@ -738,12 +863,11 @@ class VerPistasView(LoginRequiredMixin, UserPassesTestMixin, ListView):
         return self.request.user.is_superuser
 
     def get_queryset(self):
+        return self.get_ordered_pistas()
+
+    def get_ordered_pistas(self):
         return PistaBowling.objects.all().order_by('id_pista')
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        return context
-    
 class EditarPistaView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = PistaBowling
     template_name = 'editar_pista.html'
