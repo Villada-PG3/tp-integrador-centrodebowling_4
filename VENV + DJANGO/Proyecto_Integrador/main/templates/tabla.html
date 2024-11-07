@@ -137,8 +137,8 @@
                                 {% else %}
                                     {% if turno == current_turn %}
                                         <div class="rolls">
-                                            <input type="text" maxlength="2" placeholder="0" name="jugador_{{ jugador.id_jugador }}_turno_{{ turno.numero_turno }}_tirada_1">
-                                            <input type="text" maxlength="2" placeholder="0" name="jugador_{{ jugador.id_jugador }}_turno_{{ turno.numero_turno }}_tirada_2">
+                                            <input type="text" maxlength="1" placeholder="0" name="jugador_{{ jugador.id_jugador }}_turno_{{ turno.numero_turno }}_tirada_1">
+                                            <input type="text" maxlength="1" placeholder="0" name="jugador_{{ jugador.id_jugador }}_turno_{{ turno.numero_turno }}_tirada_2">
                                             {% if turno.ultimo_turno %}
                                                 <input type="text" maxlength="1" placeholder="0" name="jugador_{{ jugador.id_jugador }}_turno_{{ turno.numero_turno }}_tirada_3">
                                             {% endif %}
