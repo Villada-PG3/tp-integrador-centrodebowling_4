@@ -688,6 +688,14 @@ def finalizar_reserva(request, reserva_id):
         return redirect(('ver_reservas'))
     else:
         return redirect('mi_reserva', reserva_id=reserva_id)
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.views.generic import ListView, UpdateView, DeleteView
+from django.shortcuts import get_object_or_404
+from django.urls import reverse_lazy
+from django.http import HttpResponseRedirect
+from django.contrib import messages
+from django.utils import timezone
+
 class VerReservasView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = Reserva
     template_name = 'ver.html'
@@ -697,16 +705,25 @@ class VerReservasView(LoginRequiredMixin, UserPassesTestMixin, ListView):
         return self.request.user.is_superuser
 
     def get_queryset(self):
+        return self.get_ordered_reservas()
+
+    def get_ordered_reservas(self):
         return Reserva.objects.all().order_by('-fecha_hora_reserva')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        for reserva in context['reservas']:
-            try:
-                reserva.ultimo_estado = reserva.historialestado_set.latest('fecha_hora_inicio')
-            except HistorialEstado.DoesNotExist:
-                reserva.ultimo_estado = None
+        self.add_ultimo_estado_to_reservas(context['reservas'])
         return context
+
+    def add_ultimo_estado_to_reservas(self, reservas):
+        for reserva in reservas:
+            reserva.ultimo_estado = self.get_ultimo_estado(reserva)
+
+    def get_ultimo_estado(self, reserva):
+        try:
+            return reserva.historialestado_set.latest('fecha_hora_inicio')
+        except HistorialEstado.DoesNotExist:
+            return None
 
 class EditarReservaView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Reserva
@@ -719,28 +736,41 @@ class EditarReservaView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['estados'] = EstadoReserva.objects.all()
+        context['estados'] = self.get_all_estados()
         return context
+
+    def get_all_estados(self):
+        return EstadoReserva.objects.all()
 
     def form_valid(self, form):
         reserva = form.save(commit=False)
         nuevo_estado = form.cleaned_data.get('nuevo_estado')
-        if HistorialEstado.objects.filter(id_reserva = reserva, estado = nuevo_estado).exists():
-            HistorialEstado.objects.filter(id_reserva = reserva, estado = nuevo_estado).delete()
-        
+        self.handle_historial_estado(reserva, nuevo_estado)
+        self.set_success_message(nuevo_estado)
+        return super().form_valid(form)
+
+    def handle_historial_estado(self, reserva, nuevo_estado):
+        self.delete_existing_historial(reserva, nuevo_estado)
         if nuevo_estado:
-            HistorialEstado.objects.create(
-                id_reserva=reserva,
-                estado=nuevo_estado,
-                fecha_hora_inicio=timezone.now(),
-                fecha_hora_fin=reserva.fecha_hora_reserva
-            )
+            self.create_new_historial(reserva, nuevo_estado)
+
+    def delete_existing_historial(self, reserva, nuevo_estado):
+        if HistorialEstado.objects.filter(id_reserva=reserva, estado=nuevo_estado).exists():
+            HistorialEstado.objects.filter(id_reserva=reserva, estado=nuevo_estado).delete()
+
+    def create_new_historial(self, reserva, nuevo_estado):
+        HistorialEstado.objects.create(
+            id_reserva=reserva,
+            estado=nuevo_estado,
+            fecha_hora_inicio=timezone.now(),
+            fecha_hora_fin=reserva.fecha_hora_reserva
+        )
+
+    def set_success_message(self, nuevo_estado):
+        if nuevo_estado:
             messages.success(self.request, f'Reserva actualizada y estado cambiado a {nuevo_estado}.')
         else:
             messages.success(self.request, 'Reserva actualizada exitosamente.')
-        
-        return super().form_valid(form)
-
 
 class VerPedidosView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = Pedido
@@ -751,22 +781,29 @@ class VerPedidosView(LoginRequiredMixin, UserPassesTestMixin, ListView):
         return self.request.user.is_superuser
 
     def get_queryset(self):
+        return self.get_ordered_pedidos()
+
+    def get_ordered_pedidos(self):
         return Pedido.objects.all().order_by('-fecha_hora_pedido')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        pedidos = context['pedidos']
-        for pedido in pedidos:
-            pedido_productos = PedidoXProducto.objects.filter(id_pedido=pedido)
-            pedido.productos = [
-                {
-                    'nombre': pp.id_producto.nombre,
-                    'cantidad': pp.cantidad
-                }
-                for pp in pedido_productos
-            ]
+        self.add_productos_to_pedidos(context['pedidos'])
         return context
-    
+
+    def add_productos_to_pedidos(self, pedidos):
+        for pedido in pedidos:
+            pedido.productos = self.get_productos_for_pedido(pedido)
+
+    def get_productos_for_pedido(self, pedido):
+        pedido_productos = PedidoXProducto.objects.filter(id_pedido=pedido)
+        return [self.format_producto(pp) for pp in pedido_productos]
+
+    def format_producto(self, pedido_producto):
+        return {
+            'nombre': pedido_producto.id_producto.nombre,
+            'cantidad': pedido_producto.cantidad
+        }
 
 class EditarPedidoView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Pedido
@@ -779,8 +816,11 @@ class EditarPedidoView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = 'Editar Pedido'
+        context['title'] = self.get_title()
         return context
+
+    def get_title(self):
+        return 'Editar Pedido'
 
     def form_valid(self, form):
         pedido = form.save(commit=False)
@@ -797,15 +837,22 @@ class EliminarPedidoView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     def get_object(self, queryset=None):
         id_pedido = self.kwargs.get('pk')
+        return self.get_pedido_by_id(id_pedido)
+
+    def get_pedido_by_id(self, id_pedido):
         return get_object_or_404(Pedido, id_pedido=id_pedido)
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
         success_url = self.get_success_url()
+        self.delete_pedido()
+        return self.redirect_to_success_url(success_url)
+
+    def delete_pedido(self):
         self.object.delete()
+
+    def redirect_to_success_url(self, success_url):
         return HttpResponseRedirect(success_url)
-
-
 
 class VerPistasView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = PistaBowling
@@ -816,12 +863,11 @@ class VerPistasView(LoginRequiredMixin, UserPassesTestMixin, ListView):
         return self.request.user.is_superuser
 
     def get_queryset(self):
+        return self.get_ordered_pistas()
+
+    def get_ordered_pistas(self):
         return PistaBowling.objects.all().order_by('id_pista')
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        return context
-    
 class EditarPistaView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = PistaBowling
     template_name = 'editar_pista.html'
