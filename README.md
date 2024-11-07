@@ -44,6 +44,7 @@ Este es un proyecto Django para la gestión de un centro de bowling. La aplicaci
 │   ├── Proyecto_Integrador
 │   │   ├── config
 │   │   ├── db.sql
+        ├── database.json
 │   │   ├── main
 │   │   └── manage.py
 │   └── requirements.txt

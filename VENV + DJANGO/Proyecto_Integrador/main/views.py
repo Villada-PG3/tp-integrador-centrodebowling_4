@@ -147,6 +147,14 @@ from django.shortcuts import get_object_or_404, redirect
 from django.http import HttpResponseNotFound
 from .models import Reserva, Pedido, PedidoXProducto, Producto, HistorialEstado, Partida, EstadoPartida, Jugador
 
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.views.generic import ListView, UpdateView, DeleteView
+from django.shortcuts import get_object_or_404
+from django.urls import reverse_lazy
+from django.http import HttpResponseRedirect
+from django.contrib import messages
+from django.utils import timezone
+
 #_____________________________________________________
 #_____________ VIEWS__________________________________
 #_____________________________________________________
@@ -737,13 +745,7 @@ def finalizar_reserva(request, reserva_id):
         return redirect(('ver_reservas'))
     else:
         return redirect('mi_reserva', reserva_id=reserva_id)
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.views.generic import ListView, UpdateView, DeleteView
-from django.shortcuts import get_object_or_404
-from django.urls import reverse_lazy
-from django.http import HttpResponseRedirect
-from django.contrib import messages
-from django.utils import timezone
+
 
 class VerReservasView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = Reserva
