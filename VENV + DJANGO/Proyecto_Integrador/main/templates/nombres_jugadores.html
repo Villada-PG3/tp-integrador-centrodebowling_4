@@ -1,34 +1,62 @@
-<title>{% block title %}Strike Zone - Partidas & Bar{% endblock %}</title>
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Strike Zone - Partidas & Bar{% endblock %}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/cant_jugadores.css' %}">
+    <link rel="stylesheet" href="{% static '../static/css/index.css' %}">
+</head>
+<body>
+    
+</body>
+</html>
+
 
 <header>
     <style>
-        header, .header-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 20px 30px;
-        }
+        header, header-container{
+                    display: flex; 
+                    align-items: center;
+                    justify-content: space-between; 
+                    padding: 20px 30px; 
+                }
+        
+                .nav-menu {
+                display: flex; 
+                list-style: none; 
+                padding: 0; 
+                margin: 0; 
+            }
+            
+            .nav-menu li {
+                margin: 0 15px;
+            }
+            
+            .nav-menu a {
+                color: whitesmoke; 
+                text-decoration: none; 
+            }
+            
+            .nav-menu a:hover {
+                color: rgb(255, 106, 0);
+            }
+            .contact-section {
+                background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(/static/img/StrikeZOne.jpeg) no-repeat center center / cover;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+                color: white;
+                flex-direction: column;
+                padding-top: 80px;
+            }
+            .hero{
+                height: 100vh;
+            }
 
-        .nav-menu {
-            display: flex;
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .nav-menu li {
-            margin: 0 15px;
-        }
-
-        .nav-menu a {
-            color: black;
-            text-decoration: none;
-        }
-
-        .nav-menu a:hover {
-            color: #f0f0f0;
-        }
     </style>
     <div class="header-container">
         <a href="{% url 'index' %}" class="logo">Strike Zone</a>
@@ -91,13 +119,13 @@
         </div>
     </div>
 </header>
-{% load static %}
-<link rel="stylesheet" href="{% static 'css/cant_jugadores.css' %}">
+
 
 {% block content %}
-<br>
-<br>
-<br>
+<main>
+
+    <section class="hero">
+        <div class="container">
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-6">
@@ -115,5 +143,9 @@
         </div>
     </div>
 </div>
+        </div>
+    </section>
+</main>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 {% endblock %}
