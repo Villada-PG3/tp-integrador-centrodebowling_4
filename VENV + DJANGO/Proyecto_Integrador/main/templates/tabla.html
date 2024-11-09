@@ -1,11 +1,102 @@
-{% extends "index.html" %}
+
+<title>{% block title %}Strike Zone - Partidas & Bar{% endblock %}</title>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<header>
+    <style>
+        header, .header-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 30px;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .nav-menu li {
+            margin: 0 15px;
+        }
+
+        .nav-menu a {
+            color: black;
+            text-decoration: none;
+        }
+
+        .nav-menu a:hover {
+            color: #f0f0f0;
+        }
+    </style>
+    <div class="header-container">
+        <a href="{% url 'index' %}" class="logo">Strike Zone</a>
+        <nav>
+            <ul class="nav-menu">
+                <li><a href="{% url 'index' %}">Inicio</a></li>
+                <li><a href="{% url 'reserva' %}">Reservar</a></li>
+                {% if user.is_authenticated %}
+                    <li><a href="{% url 'misreservas' %}">Mis Reservas</a></li>
+                {% endif %}
+                <li><a href="{% url 'contacto' %}">Contacto</a></li>
+            </ul>
+        </nav>
+
+        <div class="auth-buttons">
+            {% if user.is_authenticated %}
+                
+                {% if user.is_superuser %}
+                    <form action="{% url 'admin:index' %}">
+                        <button type='submit' class="btn btn-register">Administrar</button>
+                    </form>
+                    <!-- Dropdown menu for "Ver" -->
+                    <div class="dropdown">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownVer" data-bs-toggle="dropdown" aria-expanded="false">
+                            Ver
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownVer">
+                            <li>
+                                <form action="{% url 'ver_reservas' %}">
+                                    <button type="submit" class="dropdown-item">Ver Reservas</button>
+                                </form>
+                            </li>
+                            <li>
+                                <form action="{% url 'ver_pedidos' %}">
+                                    <button type="submit" class="dropdown-item">Ver Pedidos</button>
+                                </form>
+                            </li>
+                            <li>
+                                <form action="{% url 'ver_pistas' %}">
+                                    <button type="submit" class="dropdown-item">Ver Pistas</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                {% endif %}
+                <form action="{% url 'logout' %}">
+                    <button type='submit' class="btn btn-login">Cerrar Sesión</button>
+                </form>
+
+            {% else %}
+                <form action="{% url 'login' %}">
+                    <button type='submit' class="btn btn-login">Iniciar Sesión</button>
+                </form>
+
+                <form action="{% url 'registrar' %}">
+                    <button type='submit' class="btn btn-register">Registrarse</button>
+                </form>
+                
+            {% endif %}
+        </div>
+    </div>
+</header>
+
 {% load static %}
 {% load tags2 %}
-
-{% block title %}Strike Zone - Partidas & Bar{% endblock %}
+<link rel="stylesheet" href="{% static '../static/css/tabla.css' %}">
 
 {% block content %}
-<link rel="stylesheet" href="{% static '../static/css/tabla.css' %}">
 <div class="scorecard">
     <h1>Tabla Puntuaciones - Partida {{ num_partida }}</h1>
     
@@ -35,31 +126,32 @@
                     <td class="player-name">{{ jugador.nombre_jugador }}</td>
                     {% for turno in turnos %}
                         {% with key=jugador.id_jugador|merge:turno.numero_turno %}
-                            <td class="frame-cell">
-                                <div class="frame-rolls">
-                                    {% if tiradas_dict|get_item:key %}
-                                        {% for tirada in tiradas_dict|get_item:key %}
-                                            <span class="roll">{{ tirada.display_value }}</span>
-                                        {% endfor %}
-                                    {% else %}
-                                        {% if turno == current_turn %}
-                                            <div class="rolls">
-                                                <input type="text" maxlength="2" placeholder="-" name="jugador_{{ jugador.id_jugador }}_turno_{{ turno.numero_turno }}_tirada_1">
-                                                <input type="text" maxlength="2" placeholder="-" name="jugador_{{ jugador.id_jugador }}_turno_{{ turno.numero_turno }}_tirada_2">
-                                                {% if turno.ultimo_turno %}
-                                                    <input type="text" maxlength="2" placeholder="-" name="jugador_{{ jugador.id_jugador }}_turno_{{ turno.numero_turno }}_tirada_3">
-                                                {% endif %}
-                                            </div>
+                            <td>
+                                {% if tiradas_dict|get_item:key %}
+                                    {% for tirada in tiradas_dict|get_item:key %}
+                                        {% if forloop.last %}
+                                            {{ tirada.pinos_deribados }}
                                         {% else %}
-                                            <span class="roll">-</span>
-                                            <span class="roll">-</span>
+                                            {{ tirada.pinos_deribados }} -
                                         {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    {% if turno == current_turn %}
+                                        <div class="rolls">
+                                            <input type="text" maxlength="2" placeholder="0" name="jugador_{{ jugador.id_jugador }}_turno_{{ turno.numero_turno }}_tirada_1">
+                                            <input type="text" maxlength="2" placeholder="0" name="jugador_{{ jugador.id_jugador }}_turno_{{ turno.numero_turno }}_tirada_2">
+                                            {% if turno.ultimo_turno %}
+                                                <input type="text" maxlength="1" placeholder="0" name="jugador_{{ jugador.id_jugador }}_turno_{{ turno.numero_turno }}_tirada_3">
+                                            {% endif %}
+                                        </div>
+                                    {% else %}
+                                        -
                                     {% endif %}
-                                </div>
+                                {% endif %}
                             </td>
                         {% endwith %}
                     {% endfor %}
-                    <td class="total-score">
+                    <td>
                         {{ puntaje_jugador|get_item:jugador.id_jugador }}
                     </td>
                 </tr>
@@ -71,4 +163,5 @@
         </button>
     </form>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 {% endblock %}
