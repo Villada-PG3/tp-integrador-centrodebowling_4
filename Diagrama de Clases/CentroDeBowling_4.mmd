@@ -1,406 +1,161 @@
 classDiagram
     direction LR
 
-        class CLIENTE{
-            +mail mail
-            +nombre string
-            +direccion string
-            +telefono string
-            +fecha_nacimiento date
-            +fecha_registro date
-            +lista_reservas reservas[ ]
-            -password password
-
-            +new()
-            +getMail() 
-            +setMail(mail)
-            +getNombre() 
-            +setNombre(nombre)
-            +getDireccion() 
-            +setDireccion(direccion)
-            +getTelefono() 
-            +setTelefono(telefono)
-            +getFechaNacimiento() 
-            +setFechaNacimiento(fecha_nacimiento)
-            +getListaReservas() 
-            +setListaReservas(lista_reservas)
-            
-            +print() 
-
-            +login()
-            +registrarse()
-
-            +generar_reserva()
-            +cancelar_reserva()
-            +cambiar_password()
-            +validar_email()
-            +validar_password()
-        }
-
-
-        class RESERVA{
-            +cliente_reservo CLIENTE
-            -codigo_reserva int
-            +fecha_hora_reserva date
-            +estado_actual HISTORIAL_ESTADO
-            +pista_bowling_designada PISTA_BOWLING
-
-            +duracion_minutos int
-
-            +lista_pedidos pedidos[ ]
-            +lista_partidas partidas[ ]
-
-            +new()
-            +getClienteReservo() 
-            +setClienteReservo(cliente_reservo)
-            +getCodigoReserva() 
-            +setCodigoReserva(codigo_reserva)
-            +getFechaHoraReserva() 
-            +setFechaHoraReserva(fecha_hora_reserva)
-            +getEstadoActual() 
-            +setEstadoActual(estado_actual)
-            +getPistaBowlingDesignada() 
-            +setPistaBowlingDesignada(pista_bowling_designada)
-            +getListaPedidos() 
-            +setListaPedidos(lista_pedidos)
-            +getListaPartidas() 
-            +setListaPartidas(lista_partidas)
-            +getDuracionMinutos()
-            +setDuracionMinutos(duracion_minutos)
-            +print() 
-
-            +registrar_reserva()
-            +cancelar_reserva()
-
-            +nuevo_pedido()
-            +is_finalizada()
-            +cambiar_estado()
-
-            +calcular_total_cuenta()
-            +pagar_total_cuenta_reserva()
-
-            +agregar_partida()
-
-            +verificar_disponibilidad_pista()
-            +validar_fecha_reserva()
-        }
-
-
-
-
-        class HISTORIAL_ESTADO{
-            +estado ESTADO_RESERVA
-            +fecha_hora_inicio date
-            +fecha_hora_fin date
-
-            +new()
-            +getEstado() 
-            +setEstado(estado)
-            +getFechaHoraInicio() 
-            +setFechaHoraInicio(fecha_hora_inicio)
-            +getFechaHoraFin() 
-            +setFechaHoraFin(fecha_hora_fin)
-            +print() 
-
-            +es_de_fecha()
-            +cambiar_estado()
-        }
-
-
-        class ESTADO_RESERVA{
-            +estado string
-            +descripcion string
-
-            +new( )
-            +getEstado() 
-            +setEstado(estado)
-            +getDescripcion() 
-            +setDescripcion(descripcion)
-            +print() 
-        }
-
-
-        class PEDIDO{
-            +codigo_pedido int
-            +estado ESTADO_PEDIDO
-            +fecha_hora_pedido date
-            +lista_productos productos[ ]
-
-            +new()
-            +getCodigoPedido() 
-            +setCodigoPedido(codigo_pedido)
-            +getEstado() 
-            +setEstado(estado)
-            +getFechaHoraPedido() 
-            +setFechaHoraPedido(fecha_hora_pedido)
-            +getListaProductos() 
-            +setListaProductos(lista_productos)
-            +print() 
-
-            +calcular_subtotal()
-            +nueva_orden()
-            +cambiar_estado()
-
-            +cancelar_orden()
-        }
-
-
-        class ESTADO_PEDIDO{
-            +estado string
-            +descripcion string
-
-            +new()
-            +getEstado() 
-            +setEstado(estado)
-            +getDescripcion() 
-            +setDescripcion(descripcion)
-            +print() 
-        }
-
-
-        class DETALLES_PEDIDO{
-            +producto PRODUCTO
-            +cantidad int
-
-            +new( )
-            +getProducto() 
-            +setProducto(producto)
-            +getCantidad() 
-            +setCantidad(cantidad)
-            +print() 
-
-            +calcular_sub__total_orden()
-            +agregar_producto()
-            +cancelar()
-            +confirmar()
-        }
-
-
-        class PRODUCTO{
-            +codigo_producto int
-            +nombre string
-            +descripcion string
-            +precio float
-            +imagen_portada file
-
-            +new()
-            +getCodigoProducto() 
-            +setCodigoProducto(codigo_producto)
-            +getNombre() 
-            +setNombre(nombre)
-            +getDescripcion() 
-            +setDescripcion(descripcion)
-            +getPrecio() 
-            +setPrecio(precio)
-            +getImagenPortada() 
-            +setImagenPortada(imagen_portada)
-            +print() 
-
-            +actualizar_precio()
-        }
-
-
-        class PISTA_BOWLING{
-            +numero_pista int
-            +capacidad_maxima int
-            +descripcion string
-            +estado ESTADO_PISTA
-
-            +ubicacion_fisica string
-
-            +lista_partidas partidas[ ]
-
-            +new()
-            +getNumeroPista() 
-            +setNumeroPista(numero_pista)
-            +getCapacidadMaxima() 
-            +setCapacidadMaxima(capacidad_maxima)
-            +getDescripcion() 
-            +setDescripcion(descripcion)
-            +getEstado() 
-            +setEstado(estado)
-            +getListaPartidas() 
-            +setListaPartidas(lista_partidas)
-            +getUbicacionFisica()
-            +setUbicacionFisica(ubicacion_fisica)
-            +print() 
-
-            +calcular_sub__total_pista()
-            +actualizar_estado_pista()
-        }
-
-
-        class ESTADO_PISTA{
-            +estado string
-            +descripcion string
-
-            +new(estado, )
-            +getEstado() 
-            +setEstado(estado)
-            +getDescripcion() 
-            +setDescripcion(descripcion)
-            +print() 
-        }
-
-
-        class PARTIDA{
-            +id_partida int
-            +reserva RESERVA
-            +pista_bowling_designada PISTA_BOWLING
-            +estado_partida ESTADO_PARTIDA
-            +fecha_hora_inicio date
-            +fecha_hora_fin date
-            +lista_turnos turnos[]
-            +lista_jugadores jugadores[]
-
-            +turno_actual int
-
-            +new()
-            +getIdPartida() 
-            +setIdPartida(id_partida)
-            +getReserva() 
-            +setReserva(reserva)
-            +getPistaBowlingDesignada() 
-            +setPistaBowlingDesignada(pista_bowling_designada)
-            +getEstadoPartida() 
-            +setEstadoPartida(estado_partida)
-            +getFechaHoraInicio() 
-            +setFechaHoraInicio(fecha_hora_inicio)
-            +getFechaHoraFin() 
-            +setFechaHoraFin(fecha_hora_fin)
-            +getListaTurnos() 
-            +setListaTurnos(lista_turnos)
-            +getListaJugadores() 
-            +setListaJugadores(lista_jugadores)
-            +getTurnoActual()
-            +setTurnoActual(turno_actual)
-            +print() 
-
-            +generar_jugadores()
-            +generar_turnos()
-            +cambiar_estado_partida()
-            +validar_posiciones()
-
-            +iniciar_partida() 
-            +finalizar_partida() 
-        }
-
-
-        class TURNO{
-            +numero_turno int
-            +partida PARTIDA
-            +orden int
-            +is_ultimo_turno boolean
-            +lista_tiradas tiradas[ ]
-
-            +jugador_actual JUGADOR
-            +lista_jugadores jugadores[ ]
-
-            +new()
-            +getNumeroTurno() 
-            +setNumeroTurno(numero_turno)
-            +getPartida() 
-            +setPartida(partida)
-            +getOrden() 
-            +setOrden(orden)
-            +getIsUltimoTurno() 
-            +setIsUltimoTurno(is_ultimo_turno)
-            +getListaTiradas() 
-            +setListaTiradas(lista_tiradas)
-            +getJugadorActual()
-            +setJugadorActual(jugador_actual)
-            +print() 
-
-            +pinos_derribados()
-            +verificar_fin_turno()
-        }
-
-
-        class JUGADOR{
-            +numero_jugador int
-            +partida PARTIDA
-            +orden int
-            +nombre string
-            +lista_tiradas tiradas[ ]
-
-            +new()
-            +getNumeroJugador() 
-            +setNumeroJugador(numero_jugador)
-            +getPartida() 
-            +setPartida(partida)
-            +getOrden() 
-            +setOrden(orden)
-            +getNombre() 
-            +setNombre(nombre)
-            +getListaTiradas() 
-            +setListaTiradas(lista_tiradas)
-            +print() 
-
-            +pinos_derribados()
-        }
-
-
-        class ESTADO_PARTIDA{
-            +estado string
-            +descripcion string
-
-            +new( )
-            +getEstado() 
-            +setEstado(estado)
-            +getDescripcion() 
-            +setDescripcion(descripcion)
-            +print() 
-        }
-
-
-        class TIRADA{
-            +turno TURNO
-            +intentos_restantes int
-            +pinos_restantes int
-            +pinos_derribados int
-
-            +new( )
-            +getTurno() 
-            +setTurno(turno)
-            +getIntentosRestantes() 
-            +setIntentosRestantes(intentos_restantes)
-            +getPinosRestantes() 
-            +setPinosRestantes(pinos_restantes)
-            +getPinosDerribados() 
-            +setPinosDerribados(pinos_derribados)
-            +print() 
-
-            +generar_tirada()
-            +calcular_pinos_restantes()
-            +verificar_tirada_finalizada()
-        }
-
-
-
-        
-
-
-        CLIENTE --> "*" RESERVA
-
-        RESERVA --> "1" HISTORIAL_ESTADO
-        RESERVA  --> "1" PISTA_BOWLING
-        RESERVA --> "*" PEDIDO
-        RESERVA --> "*" PARTIDA
-
-        HISTORIAL_ESTADO --> "*" ESTADO_RESERVA
-
-        PEDIDO --> "1" ESTADO_PEDIDO
-        PEDIDO --> "*" DETALLES_PEDIDO
-
-        DETALLES_PEDIDO --> "1" PRODUCTO
-
-        PISTA_BOWLING --> "1" PARTIDA
-        PISTA_BOWLING --> "1" ESTADO_PISTA
-
-        PARTIDA --> "*" JUGADOR
-        PARTIDA --> "*" TURNO
-        PARTIDA --> "1" ESTADO_PARTIDA
-
-        JUGADOR --> "*" TIRADA
-
-        TURNO --> "*" TIRADA
+    class Cliente {
+        +id_cliente: AutoField
+        +email: EmailField
+        +nombre: CharField
+        +direccion: CharField
+        +telefono: CharField
+        +password: CharField
+        +is_staff: BooleanField
+        +is_active: BooleanField
+        +is_superuser: BooleanField
+        +create_user()
+        +create_superuser()
+    }
+
+    class PistaBowling {
+        +id_pista: AutoField
+        +capacidad_maxima: IntegerField
+        +descripcion: CharField
+        +estado: ForeignKey
+    }
+
+    class Reserva {
+        +id_reserva: AutoField
+        +id_cliente: ForeignKey
+        +id_pista: ForeignKey
+        +fecha_hora_reserva: DateTimeField
+        +fecha_hora_fin: TimeField
+        +save()
+        +crear_historial_estado_inicial()
+        +procesar_reserva()
+        +actualizar_ultimo_estado()
+        +verificar_confirmacion()
+        +verificar_estado_actual()
+        +verificar_finalizacion()
+        +actualizar_fecha_hora_fin()
+        +crear_historial_estado()
+        +finalizar()
+        +estado_actual: property
+    }
+
+    class EstadoReserva {
+        +estado: CharField
+        +descripcion: CharField
+    }
+
+    class Jugador {
+        +id_jugador: AutoField
+        +id_partida: ForeignKey
+        +nombre_jugador: CharField
+        +orden: IntegerField
+        +puntaje_total: property
+    }
+
+    class Partida {
+        +id_partida: AutoField
+        +id_pista: ForeignKey
+        +id_reserva: ForeignKey
+        +estado: ForeignKey
+        +cant_jugadores: IntegerField
+        +ganador: ForeignKey
+        +actualizar_estado()
+        +crear_partidas_para_reserva()
+        +actualizar_estado_partida()
+        +calcular_ganador()
+        +get_current_turn()
+        +is_game_finished()
+        +finalize_game()
+        +crear_turnos()
+        +iniciar_partida()
+    }
+
+    class EstadoPartida {
+        +estado: CharField
+        +descripcion: CharField
+    }
+
+    class Turno {
+        +numero_turno: AutoField
+        +id_partida: ForeignKey
+        +orden: CharField
+        +ultimo_turno: BooleanField
+    }
+
+    class Tirada {
+        +numero_tirada: AutoField
+        +pinos_deribados: IntegerField
+        +orden: IntegerField
+        +id_jugador: ForeignKey
+        +numero_turno: ForeignKey
+        +registrar_tirada()
+    }
+
+    class EstadoPista {
+        +estado: CharField
+        +descripcion: CharField
+    }
+
+    class Pedido {
+        +id_pedido: AutoField
+        +estado: ForeignKey
+        +fecha_hora_pedido: DateField
+        +id_reserva: ForeignKey
+        +total_a_pagar: property
+        +crear_pedido()
+    }
+
+    class EstadoPedido {
+        +estado: CharField
+        +descripcion: CharField
+    }
+
+    class PedidoXProducto {
+        +id_pedido: ForeignKey
+        +id_producto: ForeignKey
+        +cantidad: IntegerField
+    }
+
+    class Producto {
+        +id_producto: AutoField
+        +nombre: CharField
+        +descripcion: CharField
+        +precio: IntegerField
+    }
+
+    class HistorialEstado {
+        +id_reserva: ForeignKey
+        +estado: ForeignKey
+        +fecha_hora_inicio: DateTimeField
+        +fecha_hora_fin: DateTimeField
+    }
+
+
+
+    Cliente --> "*" Reserva
+
+    Reserva --> "1" HistorialEstado
+    Reserva  --> "1" PistaBowling
+    Reserva --> "*" Pedido
+    Reserva --> "*" Partida
+
+    HistorialEstado --> "*" EstadoReserva
+
+    Pedido --> "1" EstadoPedido
+    Pedido -- "1" PedidoXProducto
+    PedidoXProducto  --> "*" Producto
+
+    PistaBowling --> "1" Partida
+    PistaBowling --> "1" EstadoPista
+
+    Partida --> "*" Jugador
+    Partida --> "*" Turno
+    Partida --> "1" EstadoPartida
+
+    Jugador --> "*" Tirada
+
+    Turno --> "*" Tirada
+
+
