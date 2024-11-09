@@ -138,7 +138,6 @@ from django.views import View
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from .models import Reserva, Pedido, PedidoXProducto, EstadoPedido
-from .forms import MultiplePedidoForm
 from django.utils import timezone
 
 #_____________________________________________________
@@ -221,6 +220,7 @@ def cancelar_reserva(request, pk):
 class ContactoView(TemplateView):
     template_name = 'contacto.html'
 
+
 class mi_reserva(TemplateView):
     template_name = 'menu_partidas_bar.html'
 
@@ -301,7 +301,24 @@ class mi_reserva(TemplateView):
         return context
 
 
-class TablaView(TemplateView):
+
+    def update_or_create_pedido_producto(self, pedido, producto, cantidad):
+        pedido_producto, created = self.get_or_create_pedido_producto(pedido, producto)
+        if created:
+            pedido_producto.cantidad = cantidad
+        else:
+            pedido_producto.cantidad += cantidad
+        pedido_producto.save()
+
+    def get_or_create_pedido_producto(self, pedido, producto):
+        return PedidoXProducto.objects.get_or_create(
+            id_pedido=pedido,
+            id_producto=producto,
+            defaults={'cantidad': 0}
+        )
+
+class TablaView(TemplateView):#MOD
+
     template_name = 'tabla.html'
 
     def get_context_data(self, **kwargs):
@@ -441,6 +458,7 @@ class TablaView(TemplateView):
         partida.ganador = ganador
         partida.estado = EstadoPartida.objects.get(estado='Finalizada')
         partida.save()
+
 
 class CustomLoginView(LoginView):
     template_name = 'login.html'
