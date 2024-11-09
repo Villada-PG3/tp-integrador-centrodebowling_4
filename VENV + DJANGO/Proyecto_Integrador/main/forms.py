@@ -63,16 +63,11 @@ class CustomRegisterForm(forms.ModelForm):
     
 
 
+from datetime import timedelta
+
 class ReservaForm(forms.ModelForm):
-    fecha_hora_reserva = forms.DateTimeField(
-        widget=forms.DateTimeInput(attrs={'type': 'datetime-local', 'class':"form-control" }, format='%Y-%m-%dT%H:%M'),
-        input_formats=('%Y-%m-%dT%H:%M',)
-    )
-    id_pista = forms.ModelChoiceField(
-        queryset=PistaBowling.objects.all(),
-        widget=forms.RadioSelect(attrs={'class': 'lineas'}),
-        empty_label=None
-    )
+    fecha_hora_reserva = forms.DateTimeField(widget=forms.DateTimeInput(attrs={'type': 'datetime-local', 'class':"form-control" }, format='%Y-%m-%dT%H:%M'),input_formats=('%Y-%m-%dT%H:%M',))
+    id_pista = forms.ModelChoiceField(queryset=PistaBowling.objects.all(),widget=forms.RadioSelect(attrs={'class': 'lineas'}),empty_label=None)
 
     email_cliente = forms.EmailField(label='Correo electrónico: ', widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ingrese correo'}))
 
@@ -83,32 +78,39 @@ class ReservaForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
         super(ReservaForm, self).__init__(*args, **kwargs)
-        
-    def clean_id_pista(self):
-        fecha_hora_reserva = self.cleaned_data['fecha_hora_reserva']
-        pista = self.cleaned_data['id_pista']  # Obtener el objeto PistaBowling
 
-        # Verificar si la pista está disponible en la fecha y hora seleccionada
-        if not comprobar_disponibilidad_pistas(fecha_hora_reserva, pista):
-            raise forms.ValidationError('La pista no está disponible en la fecha y hora seleccionada')
+    def clean(self):
+        cleaned_data = super().clean()
+        fecha_hora_reserva = cleaned_data.get('fecha_hora_reserva')
+        pista = cleaned_data.get('id_pista')
+        email_cliente = cleaned_data.get('email_cliente')
 
-        return pista
+        if fecha_hora_reserva and pista:
+            # Check for existing reservations within a 2-hour window
+            start_time = fecha_hora_reserva - timedelta(hours=1)
+            end_time = fecha_hora_reserva + timedelta(hours=1)
+            
+            existing_reservations = Reserva.objects.filter(
+                id_pista=pista,
+                fecha_hora_reserva__range=(start_time, end_time)
+            )
+            
+            
+            
+            if existing_reservations.exists():
+                raise forms.ValidationError('Ya existe una reserva para esta pista en un horario cercano.')
 
-    def clean_email_cliente(self):
-        
-        email_cliente = self.cleaned_data['email_cliente']
-        if email_cliente != self.request.user.email:
-            raise forms.ValidationError('El correo electrónico debe ser el mismo que el de su cuenta')
-        else:
-            try:
-                cliente = Cliente.objects.get(email=email_cliente)
-                return cliente
-            except Cliente.DoesNotExist:
-                raise forms.ValidationError('El correo electrónico del cliente no existe')
+        if email_cliente:
+            if email_cliente != self.request.user.email:
+                raise forms.ValidationError('El correo electrónico debe ser el mismo que el de su cuenta')
+            else:
+                try:
+                    cliente = Cliente.objects.get(email=email_cliente)
+                    cleaned_data['email_cliente'] = cliente
+                except Cliente.DoesNotExist:
+                    raise forms.ValidationError('El correo electrónico del cliente no existe')
 
-
-
-
+        return cleaned_data
 class JugadoresForm(forms.Form):
     cantidad_jugadores = forms.IntegerField(
         label='Cantidad de Jugadores',

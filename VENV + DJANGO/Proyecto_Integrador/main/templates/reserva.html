@@ -122,7 +122,7 @@
                         {% for pista in form.id_pista %}
                             <div class="lane">
                                 {% if pista.choice_value|comprobar_disponibilidad_pistas:form.fecha_hora_reserva.value %}
-                                    
+                                <span class="unavailable" display="none">{{ pista }}</span>
                                 {% else %}
                                     <!-- Aquí se imprime la pista y un mensaje de error si no está disponible -->
                                     <span class="available">{{ pista }}</span>
