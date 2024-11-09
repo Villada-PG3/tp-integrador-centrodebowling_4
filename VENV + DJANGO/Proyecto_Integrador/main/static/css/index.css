@@ -30,7 +30,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 30px;
+            padding: 0 30px ;
             width: 100%;
         }
         .logo {
@@ -628,6 +628,89 @@
           }
 
 
+
+          .scorecard {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    padding: 30px;
+    max-width: 1200px;
+    width: 100%;
+    overflow-x: auto;
+}
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 3px;
+}
+th, td {
+    border: 2px solid #ff6600;
+    border-radius: 10px;
+    padding: 10px 5px;
+    text-align: center;
+    position: relative;
+}
+th {
+    background-color: #ff6600;
+    color: white;
+    font-weight: bold;
+    font-size: 24px;
+}
+.frame {
+    width: 70px;
+}
+.frame-10 {
+    width: 90px;
+}
+.total {
+    width: 80px;
+}
+.player-name {
+    width: 200px;
+    text-align: left;
+    font-weight: bold;
+    color: #333;
+    font-size: 18px;
+}
+.rolls {
+    display: flex;
+    justify-content: space-around;
+}
+.rolls input {
+    width: 25px;
+    height: 25px;
+    border: 1px solid #ddd;
+    border-radius: 50%;
+    text-align: center;
+    font-size: 16px;
+    margin: 2px;
+}
+.frame-score {
+    font-weight: bold;
+    color: #333;
+    margin-top: 5px;
+}
+.total-score {
+    font-size: 24px;
+    font-weight: bold;
+    color: #ff6600;
+}
+.finish-button {
+    display: block;
+    margin: 20px auto 0;
+    padding: 10px 20px;
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
+    background-color: #ff6600;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+.finish-button:hover {
+    background-color: #e55b00;
+}
 
 
 

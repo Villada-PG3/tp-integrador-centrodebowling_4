@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <title>{% block title %}Strike Zone - Centro de Bowling{% endblock %}</title>
 
     {%load static%}
@@ -52,79 +53,81 @@
                 flex-direction: column;
                 padding-top: 80px;
             }
-            .info-item h3 {
-    color: #ff6701;
-}
+                .info-item h3 {
+                color: #ff6701;
+                font-size: 20px;
+            }
 
     </style>
-    <div class="header-container">
-            <a href="{% url 'index' %}" class="logo">Strike Zone</a>
+
+        <div class="header-container">
+            <a href="/" class="logo">Strike Zone</a>
             <nav>
+    
+                
                 <ul class="nav-menu">
-                    <li><a href="{% url 'index' %}">Inicio</a></li>
-                    <li><a href="{% url 'reserva' %}">Reservar</a></li>
-                    {% if user.is_authenticated %}
-                        <li><a href="{% url 'misreservas' %}">Mis Reservas</a></li>
-                    {% endif %}
-                    <li><a href="{% url 'contacto' %}">Contacto</a></li>
+                    <li><a href="/">Inicio</a></li>
+                    <li><a href="/reserva/">Reservar</a></li>
+                    
+                    <li><a href="/misreservas/">Mis Reservas</a></li>
+                    
+                    <li><a href="/contacto/">Contacto</a></li>
                 </ul>
             </nav>
-    
             <div class="auth-buttons">
-
-   
-        
-        
-
+                
+                
                 {% if user.is_authenticated %}
                     
                     {% if user.is_superuser %}
-                        <form action="{% url 'admin:index' %}">
-                            <button type='submit' class="btn btn-register">Administrar</button>
-                        </form>
-                        <!-- Dropdown menu for "Ver" -->
-                        <div class="dropdown">
-                            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownVer" data-bs-toggle="dropdown" aria-expanded="false">
-                                Ver
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="dropdownVer">
-                                <li>
-                                    <form action="{% url 'ver_reservas' %}">
-                                        <button type="submit" class="dropdown-item">Ver Reservas</button>
-                                    </form>
-                                </li>
-                                <li>
-                                    <form action="{% url 'ver_pedidos' %}">
-                                        <button type="submit" class="dropdown-item">Ver Pedidos</button>
-                                    </form>
-                                </li>
-                                <li>
-                                    <form action="{% url 'ver_pistas' %}">
-                                        <button type="submit" class="dropdown-item">Ver Pistas</button>
-                                    </form>
-                                </li>
-                            </ul>
-                        </div>
+                
+                    <form action="/admin/">
+                        <button type="submit" class="btn btn-register">Administrar</button>
+                    </form>
+                    <div class="dropdown">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownVer" data-bs-toggle="dropdown" aria-expanded="false">
+                            Ver
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownVer">
+                            <li>
+                                <form action="/ver-reservas/">
+                                    <button type="submit" class="dropdown-item">Ver Reservas</button>
+                                </form>
+                            </li>
+                            <li>
+                                <form action="/ver_pedidos/">
+                                    <button type="submit" class="dropdown-item">Ver Pedidos</button>
+                                </form>
+                            </li>
+                            <li>
+                                <form action="/ver_pistas/">
+                                    <button type="submit" class="dropdown-item">Ver Pistas</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
                     {% endif %}
-                    <form action="{% url 'logout' %}">
-                        <button type='submit' class="btn btn-login">Cerrar Sesión</button>
-                    </form>
-    
+                <form action="/logout/">
+                    <button type="submit" class="btn btn-login">Cerrar Sesión</button>
+                </form>
                 {% else %}
-                    <form action="{% url 'login' %}">
-                        <button type='submit' class="btn btn-login">Iniciar Sesión</button>
-                    </form>
-    
-                    <form action="{% url 'registrar' %}">
-                        <button type='submit' class="btn btn-register">Registrarse</button>
-                    </form>
-                    
-                {% endif %}
+                <form action="{% url 'login' %}">
+                    <button type='submit' class="btn btn-login">Iniciar Sesión</button>
+                </form>
+
+                <form action="{% url 'registrar' %}">
+                    <button type='submit' class="btn btn-register">Registrarse</button>
+                </form>
+                
+            {% endif %}
+        
+                
+                
             </div>
         </div>
+
+
     </header>
-
-
 
 {% block content %}
 
@@ -179,3 +182,4 @@
         });
     });
 </script>
+</html>

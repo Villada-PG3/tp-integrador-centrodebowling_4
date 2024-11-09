@@ -8,37 +8,39 @@
 
     {%load static%}
     <link rel="stylesheet" href="../static/css/ver.css">
+    <link rel="stylesheet" href="../static/css/index.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
 </head>
 <body>
     <header>
         <style>
-            header, .header-container {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                padding: 20px 30px;
-            }
-    
-            .nav-menu {
-                display: flex;
-                list-style: none;
-                padding: 0;
-                margin: 0;
-            }
-    
-            .nav-menu li {
-                margin: 0 15px;
-            }
-    
-            .nav-menu a {
-                color: black;
-                text-decoration: none;
-            }
-    
-            .nav-menu a:hover {
-                color: #f0f0f0;
-            }
+            header, header-container{
+                        display: flex; 
+                        align-items: center;
+                        justify-content: space-between; 
+                        padding: 20px 30px; 
+                    }
+            
+                    .nav-menu {
+                    display: flex; 
+                    list-style: none; 
+                    padding: 0; 
+                    margin: 0; 
+                }
+                
+                .nav-menu li {
+                    margin: 0 15px;
+                }
+                
+                .nav-menu a {
+                    color: whitesmoke; 
+                    text-decoration: none; 
+                }
+                
+                .nav-menu a:hover {
+                    color: rgb(255, 106, 0);
+                }
+                    
         </style>
         <div class="header-container">
             <a href="{% url 'index' %}" class="logo">Strike Zone</a>
@@ -103,6 +105,7 @@
     </header>
 
     <main>
+          <section class="hero">
         <div class="container">
             <h2><i class="fas fa-bowling-ball mr-2"></i>Lista de Pistas</h2>
             <div class="table-responsive">

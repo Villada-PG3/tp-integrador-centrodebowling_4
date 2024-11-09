@@ -90,7 +90,7 @@ body {
     align-items: center;
     min-height: 100vh;
     margin: 0;
-    padding: 20px;
+    padding: 0px;
     box-sizing: border-box;
 }
 .scorecard {
