@@ -70,7 +70,7 @@ class mi_reserva(TemplateView):
                 'partidas': [],
                 'estado_reserva': None,
             })
-        
+
         return context
 
 class TablaView(TemplateView):

@@ -1,5 +1,30 @@
 classDiagram
-    direction LR
+    direction TB
+
+
+    
+    class ClienteManager {
+    <<Handler>>
+        +create_user()
+        +create_superuser()
+    }
+
+     class TablaView {
+        <<interfaz>>
+    
+    
+        +get_context_data()
+        +get_partida()
+        +get_jugadores()
+        +get_Tiradas()
+        +get_turnos()
+        +get_turno_actual()
+        +post()
+        +registrar_tirada()
+        +termino_la_partida()
+        +finalizar_partida()
+    }
+
 
     class Cliente {
         +id_cliente: AutoField
@@ -11,9 +36,18 @@ classDiagram
         +is_staff: BooleanField
         +is_active: BooleanField
         +is_superuser: BooleanField
-        +create_user()
-        +create_superuser()
+        
     }
+
+
+    class Pedido {
+        +id_pedido: AutoField
+        +estado: ForeignKey
+        +fecha_hora_pedido: DateField
+        +id_reserva: ForeignKey
+        +total_a_pagar: property
+        +crear_pedido()
+    }   
 
     class PistaBowling {
         +id_pista: AutoField
@@ -39,6 +73,13 @@ classDiagram
         +crear_historial_estado()
         +finalizar()
         +estado_actual: property
+    }
+
+    class HistorialEstado {
+        +id_reserva: ForeignKey
+        +estado: ForeignKey
+        +fecha_hora_inicio: DateTimeField
+        +fecha_hora_fin: DateTimeField
     }
 
     class EstadoReserva {
@@ -98,14 +139,6 @@ classDiagram
         +descripcion: CharField
     }
 
-    class Pedido {
-        +id_pedido: AutoField
-        +estado: ForeignKey
-        +fecha_hora_pedido: DateField
-        +id_reserva: ForeignKey
-        +total_a_pagar: property
-        +crear_pedido()
-    }
 
     class EstadoPedido {
         +estado: CharField
@@ -125,21 +158,184 @@ classDiagram
         +precio: IntegerField
     }
 
-    class HistorialEstado {
-        +id_reserva: ForeignKey
-        +estado: ForeignKey
-        +fecha_hora_inicio: DateTimeField
-        +fecha_hora_fin: DateTimeField
+    
+
+    class MisReservasView {
+        <<interfaz>>
+
+        +reserva: Reserva
+        +get_reservas()
+        +procesar_reserva()
     }
 
+    class mi_reservaView {
+        <<interfaz>>
+
+        +reserva: Reserva
+        +crear_partidas_para_reserva()
+        +actualizar_estado_partida()
+        +get_pedidos()
+        +get_reservas()
+        +get_partidas()
+        +get_estado_reserva()
+        +calc_total_a_pagar()
+        +finalzar_reserva()
+    }
+
+   
+    class ReservaView {
+        <<interfaz>>
+    
+        +reserva: Reserva
+        +get_form_kwargs()
+        +form_valid()
+        +save_reserva()
+    }
+
+    class JugadoresView {
+        <<interfaz>>
+    
+        +jugadores: Jugador[ ]
+        +get()
+        +post()
+        +save_partida()
+        +get_detalles_pista()
+    }
+
+    class NombresJugadoresView {
+        <<interfaz>>
+    
+        +jugadores: Jugador[ ]
+        +get()
+        +post()
+        +isinstance()
+        +get_object_or_404()
+        +crear_turnos()
+        +iniciar_partida()
+        +crear_Jugador()
+        +iniciar_partida()
+    }
+
+    class AgregarPedidoView {
+        <<interfaz>>
+    
+        +pedido: Pedido
+        +post()
+        +get_object_or_404()
+        +crear_pedido()
+    }
+
+    
+    class VerReservasView {
+        <<interfaz>>
+
+        +reserva: Reserva
+        +get_queryset()
+        +get_context_data()
+        +test_func()
+    }
+
+    class EditarReservaView {
+        <<interfaz>>
+
+        +reserva: Reserva
+        +get_context_data()
+        +form_valid()
+        +test_func()
+    }
+
+    class VerPedidosView {
+        <<interfaz>>
+
+        +pedido: Pedido
+        +get_queryset()
+        +get_context_data()
+        +test_func()
+    }
+
+    class EditarPedidoView {
+        <<interfaz>>
+
+        +pedido: Pedido
+        +get_context_data()
+        +form_valid()
+        +test_func()
+    }
+
+    class EliminarPedidoView {
+        <<interfaz>>
+
+        +pedido: Pedido
+        +get_object()
+        +delete()
+        +test_func()
+    }
+
+    class VerPistasView {
+        <<interfaz>>
+
+        +pista: PistaBowling
+        +get_queryset()
+        +test_func()
+    }
+
+    class EditarPistaView {
+        <<interfaz>>
+
+        +pista: PistaBowling
+        +get_context_data()
+        +form_valid()
+        +test_func()
+    }
+
+    note for AgregarPedidoView "Para hacer pedidos"
+
+    note for NombresJugadoresView "Para poner los Nombres
+    de los Jugadores"
+
+    note for JugadoresView "Para colocar la CANTIDAD de jugadores"
+
+    note for ReservaView "Esta vista es para hacer la reserva"
+
+    note for TablaView "La vista que muestra y genera la tabla"
+
+    note for mi_reservaView "Para cuando ingresas a ver detalles 
+    de una de TUS reservas"
+
+    note for MisReservasView "Para visualizar las 
+    reservas que hiciste"
 
 
-    Cliente --> "*" Reserva
+    
+    
+    
+    
 
-    Reserva --> "1" HistorialEstado
-    Reserva  --> "1" PistaBowling
-    Reserva --> "*" Pedido
-    Reserva --> "*" Partida
+    
+
+    AgregarPedidoView -- Pedido
+    VerPedidosView -- Pedido
+    EditarPedidoView -- Pedido
+    EliminarPedidoView -- Pedido
+    mi_reservaView -- Pedido
+    
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    NombresJugadoresView -- Jugador
+    NombresJugadoresView -- Turno
+
+
+    JugadoresView -- Jugador
+
 
     HistorialEstado --> "*" EstadoReserva
 
@@ -147,8 +343,7 @@ classDiagram
     Pedido -- "1" PedidoXProducto
     PedidoXProducto  --> "*" Producto
 
-    PistaBowling --> "1" Partida
-    PistaBowling --> "1" EstadoPista
+    
 
     Partida --> "*" Jugador
     Partida --> "*" Turno
@@ -157,5 +352,56 @@ classDiagram
     Jugador --> "*" Tirada
 
     Turno --> "*" Tirada
+
+    
+    TablaView -- Jugador
+    TablaView -- Tirada
+    TablaView -- Turno
+
+    NombresJugadoresView -- Partida
+    TablaView -- Partida
+    mi_reservaView -- Partida
+    Reserva --> "*" Partida
+
+    VerPistasView -- PistaBowling
+    EditarPistaView -- PistaBowling
+    PistaBowling --> "1" Partida
+    PistaBowling --> "1" EstadoPista
+    
+    
+    
+
+
+    Reserva --> "*" Pedido
+    
+    
+    Reserva  --> "1" PistaBowling
+    
+    Reserva --> "1" HistorialEstado
+    
+    mi_reservaView -- Reserva
+    ReservaView -- Reserva
+    MisReservasView -- Reserva
+    VerReservasView -- Reserva
+    EditarReservaView -- Reserva
+
+    Cliente --> "*" Reserva
+    ClienteManager -- Cliente
+
+    note for VerReservasView "Para visualizar las reservas"
+
+    note for EditarReservaView "Para editar una reserva"
+
+    note for VerPedidosView "Para visualizar los pedidos"
+
+    note for EditarPedidoView "Para editar un pedido"
+
+    note for EliminarPedidoView "Para eliminar un pedido"
+
+    note for VerPistasView "Para visualizar las pistas"
+
+    note for EditarPistaView "Para editar una pista"
+
+    
 
 
