@@ -64,6 +64,9 @@ class Reserva(models.Model):
     def __str__(self):
         return f"ID: {self.id_reserva} - {self.id_cliente} - Id Pista:{self.id_pista}"
     
+    def get_reserva_x_cliente(self, cliente):
+        return Reserva.objects.filter(id_cliente = cliente)
+    
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         self.crear_historial_estado_inicial()
@@ -161,8 +164,8 @@ class Jugador(models.Model):
 
 class Partida(models.Model):
     id_partida = models.AutoField(primary_key=True)
-    id_pista = models.ForeignKey(PistaBowling, on_delete=models.CASCADE, default=1)  
-    id_reserva = models.ForeignKey(Reserva, on_delete=models.CASCADE, default=1)  
+    id_pista = models.ForeignKey(PistaBowling, on_delete=models.CASCADE, default=1)
+    id_reserva = models.ForeignKey(Reserva, on_delete=models.CASCADE, default=1)
     estado = models.ForeignKey('EstadoPartida', on_delete=models.CASCADE, default='Disponible')
     cant_jugadores = models.IntegerField(null=True, blank=True)
     ganador = models.ForeignKey(Jugador, on_delete=models.SET_NULL, null=True, blank=True, related_name='partidas_ganadas')
@@ -170,52 +173,79 @@ class Partida(models.Model):
     def __str__(self):
         return str(f"{self.id_partida} - {self.estado}")
 
-    def actualizar_estado(self):
-        if self.estado.estado == 'Finalizada':
-            partidas = Partida.objects.filter(id_reserva=self.id_reserva)
-            if partidas.filter(estado__estado='Finalizada').count() == 2:
-                siguiente_partida = partidas.exclude(id_partida=self.id_partida).filter(estado__estado='Bloqueada').first()
-                if siguiente_partida:
-                    siguiente_partida.estado = EstadoPartida.objects.get(estado='Disponible')
-                    siguiente_partida.save()
+    
 
     @classmethod
     def crear_partidas_para_reserva(cls, reserva):
         partidas = list(cls.objects.filter(id_reserva=reserva).order_by('id_partida'))
+        
+        # Si hay menos de 3 partidas, se crean las necesarias
         if len(partidas) < 3:
+            estado_disponible = EstadoPartida.objects.get(estado='Disponible')
             estado_bloqueado = EstadoPartida.objects.get(estado='Bloqueada')
-            for _ in range(3 - len(partidas)):
+
+            for i in range(3 - len(partidas)):
+                # La primera partida creada debe estar disponible
+                if i == 0:
+                    estado_partida = estado_disponible
+                else:
+                    estado_partida = estado_bloqueado
+                
                 nueva_partida = cls.objects.create(
                     id_pista=reserva.id_pista,
                     id_reserva=reserva,
-                    estado=estado_bloqueado,
+                    estado=estado_partida,
                     cant_jugadores=0
                 )
                 partidas.append(nueva_partida)
+
         return partidas
 
-    def actualizar_estado_partida(self, estado_reserva):
+    def update_partidas_status(self, partidas, estado_reserva):
         estado_disponible = EstadoPartida.objects.get(estado='Disponible')
         estado_bloqueado = EstadoPartida.objects.get(estado='Bloqueada')
         estado_en_proceso = EstadoPartida.objects.get(estado='En proceso')
         estado_finalizado = EstadoPartida.objects.get(estado='Finalizada')
 
+
+        for i, partida in enumerate(partidas):
+            self.update_partida_status(partida, i, partidas, estado_reserva, estado_disponible, estado_bloqueado, estado_en_proceso, estado_finalizado)
+
+
+    def update_partida_status(self, partida, index, partidas, estado_reserva, estado_disponible, estado_bloqueado, estado_en_proceso, estado_finalizado):
         if estado_reserva == 'En curso':
-            if self.estado != estado_finalizado and self.estado != estado_en_proceso:
-                self.estado = estado_disponible
-        elif self.estado != estado_finalizado and self.estado != estado_en_proceso:
-            self.estado = estado_bloqueado
+            self.update_partida_status_en_curso(partida, index, partidas, estado_disponible, estado_bloqueado, estado_finalizado, estado_en_proceso)
+        else:
+            self.update_partida_status_not_en_curso(partida, estado_bloqueado, estado_finalizado, estado_en_proceso)
+        if partida.estado == estado_finalizado:
+            self.set_partida_winner(partida)
+        partida.save()
 
-        if self.estado == estado_finalizado:
-            self.calcular_ganador()
 
-        self.save()
+    def update_partida_status_en_curso(self, partida, index, partidas, estado_disponible, estado_bloqueado, estado_finalizado, estado_en_proceso):
+        if index == 0 and partida.estado not in [estado_finalizado, estado_en_proceso]:
+            partida.estado = estado_disponible
+        elif index > 0 and partidas[index-1].estado == estado_finalizado and partida.estado not in [estado_finalizado, estado_en_proceso]:
+            partida.estado = estado_disponible
+        elif partida.estado not in [estado_finalizado, estado_en_proceso]:
+            partida.estado = estado_bloqueado
 
-    def calcular_ganador(self):
-        jugadores = Jugador.objects.filter(id_partida=self)
+
+    def update_partida_status_not_en_curso(self, partida, estado_bloqueado, estado_finalizado, estado_en_proceso):
+        if partida.estado not in [estado_finalizado, estado_en_proceso]:
+            partida.estado = estado_bloqueado
+
+
+    def set_partida_winner(self, partida):
+        jugadores = Jugador.objects.filter(id_partida=partida)
         if jugadores.exists():
-            self.ganador = max(jugadores, key=lambda j: j.puntaje_total)
-            self.save()
+            puntajes = self.calculate_player_scores(jugadores)
+            ganador = max(puntajes, key=puntajes.get)
+            partida.ganador = ganador
+
+
+    def calculate_player_scores(self, jugadores):
+        return {jugador: sum(tirada.pinos_deribados for tirada in jugador.tirada_set.all()) for jugador in jugadores}
 
     def get_current_turn(self):
         turnos = self.turno_set.order_by('numero_turno')
@@ -237,8 +267,8 @@ class Partida(models.Model):
         expected_tiradas = sum(3 if turno.ultimo_turno else 2 for turno in turnos) * jugadores.count()
         return tiradas.count() >= expected_tiradas
 
-    def finalize_game(self):
-        self.calcular_ganador()
+    def finalize_game(self, partida):
+        self.set_partida_winner(partida)
         self.estado = EstadoPartida.objects.get(estado='Finalizada')
         self.save()
 
@@ -306,6 +336,8 @@ class Pedido(models.Model):
     def __str__(self):
         return str(f"ID: {self.id_pedido} - Estado: {self.estado}")
 
+    def obtener_pedidos_reserva(self, reserva):
+        return Pedido.objects.filter(id_reserva=reserva)
     @property
     def total_a_pagar(self):
         return sum(item.cantidad * item.id_producto.precio for item in self.pedidoxproducto_set.all())

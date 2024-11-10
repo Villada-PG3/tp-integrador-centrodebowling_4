@@ -1,3 +1,9 @@
+
+#=============================================================================================
+#============================  IMPORTS =======================================================
+#=============================================================================================
+
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import TemplateView, DeleteView, ListView, CreateView, UpdateView, View
 from django.urls import reverse_lazy, reverse
@@ -11,47 +17,50 @@ from django.utils import timezone
 from .forms import CustomLoginForm, ReservaForm, CustomRegisterForm, ReservaEditForm
 from .models import *
 
-class IndexView(TemplateView):
-    template_name = 'index.html'
+#====================== VIEWS + LOGICA ========================================================
 
-class MisReservasView(ListView):
+
+class IndexView(TemplateView): # View de Inicio, html puro
+    template_name = 'index.html' #nombre de la plantilla a usar
+
+class MisReservasView(ListView): #La view para ver tus Reservas
     model = Reserva
     template_name = 'misreservas.html'
 
     def get(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
+        if not request.user.is_authenticated: #Aca hace que si el usuario no inicio sesion, lo mande al login
             return redirect('login')
-        return super().get(request, *args, **kwargs)
+        return super().get(request, *args, **kwargs) #Si inicio sesion, entonces obtiene los argumentos del html
 
     def get_queryset(self):
-        reservas = Reserva.objects.filter(id_cliente=self.request.user.id_cliente)
+        reservas = Reserva.get_reserva_x_cliente(self, self.request.user.id_cliente)# obtiene las reservas del usuario logueado
         for reserva in reservas:
-            reserva.procesar_reserva()
+            reserva.procesar_reserva() # checkea todos los datos de la reserva
         return reservas
 
-def cancelar_reserva(request, pk):
+def cancelar_reserva(request, pk): # Pa cancelar la reserva
     reserva = Reserva.objects.get(pk=pk)
     reserva.delete()
     return redirect('misreservas')
 
-class ContactoView(TemplateView):
+class ContactoView(TemplateView): # Puro html
     template_name = 'contacto.html'
 
-class mi_reserva(TemplateView):
+class mi_reserva(TemplateView): #cuando le das al boton de "ver" en la lista de mis reservas, donde ves las partidas y gestionas tus pedidos
     template_name = 'menu_partidas_bar.html'
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs): #obtiene
         context = super().get_context_data(**kwargs)
         reserva_id = self.kwargs['reserva_id']
 
         try:
             reserva = get_object_or_404(Reserva, pk=reserva_id, id_cliente=self.request.user.id_cliente)
-            pedidos = Pedido.objects.filter(id_reserva=reserva.id_reserva)
+            pedidos = Pedido.obtener_pedidos_reserva(self, reserva.id_reserva) #obtiene los pedidos de la reserva
             estado_reserva = reserva.estado_actual
-            partidas = Partida.crear_partidas_para_reserva(reserva)
+            partidas = Partida.crear_partidas_para_reserva(reserva) # le crea las 3 partidas correspondientes
 
             for partida in partidas:
-                partida.actualizar_estado_partida(estado_reserva)
+                partida.update_partidas_status(partidas, estado_reserva)
 
             total_a_pagar = sum(pedido.total_a_pagar for pedido in pedidos)
 
@@ -132,6 +141,9 @@ class TablaView(TemplateView):
             for j in tiradas_range:
                 clave = f'jugador_{jugador.id_jugador}_turno_{current_turn.numero_turno}_tirada_{j}'
                 pinos_derribados = request.POST.get(clave, '')
+                
+                if pinos_derribados == 'x':
+                    pinos_derribados = '10'
 
                 if pinos_derribados.isdigit() and not current_turn.ultimo_turno:
                     pinos_derribados = int(pinos_derribados)
@@ -143,7 +155,7 @@ class TablaView(TemplateView):
                         if j == 1:
                             primera_tirada = tirada
                     else:
-                        messages.error(request, f"⦁ Turno {current_turn.orden} invalido para el jugador {jugador.nombre_jugador}, tirada {j}: Es imposible tirar mas de 10 pinos.")
+                        messages.success(request, f"⦁ Turno {current_turn.orden} invalido para el jugador {jugador.nombre_jugador}, tirada {j}: Es imposible tirar mas de 10 pinos.")
                         tiradas_completas = False
                         hay_error = True
                         break
@@ -157,7 +169,7 @@ class TablaView(TemplateView):
                     tiradas_completas = True
                     hay_error = False
                 else:
-                    messages.error(request, f"⦁ Turno {current_turn.orden} invalido para el jugador {jugador.nombre_jugador}, fila {j}: Debe ser un numero.")
+                    messages.success(request, f"⦁ Turno {current_turn.orden} invalido para el jugador {jugador.nombre_jugador}, fila {j}: Debe ser un numero.")
                     tiradas_completas = False
                     hay_error = True
                     break
@@ -165,10 +177,10 @@ class TablaView(TemplateView):
             if not tiradas_completas:
                 for tirada in tiradas_jugador:
                     tirada.delete()
-                messages.error(request, f"⦁ Todas las tiradas deben ser registradas por el jugador {jugador.nombre_jugador} en el turno {current_turn.orden}.")
+                messages.success(request, f"⦁ Todas las tiradas deben ser registradas por el jugador {jugador.nombre_jugador} en el turno {current_turn.orden}.")
 
         if not hay_error and partida.is_game_finished():
-            partida.finalize_game()
+            partida.finalize_game(partida)
             return redirect('mi_reserva', reserva_id=partida.id_reserva.id_reserva)
 
         return redirect('tabla', partida_id=partida_id)
@@ -211,7 +223,7 @@ class ReservaView(CreateView):
 
         
         reserva.save()
-        messages.success(self.request, 'Reserva creada exitosamente.')
+        
         return super().form_valid(form)
 
 class JugadoresView(View):
@@ -295,7 +307,7 @@ def finalizar_reserva(request, reserva_id):
         
         reserva.finalizar()
         
-        messages.success(request, 'Reserva finalizada exitosamente.')
+        
         
         if request.user.is_superuser:
             return redirect(reverse('ver_reservas'))
@@ -343,10 +355,6 @@ class EditarReservaView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         nuevo_estado = form.cleaned_data.get('nuevo_estado')
         if nuevo_estado:
             reserva.crear_historial_estado(nuevo_estado, timezone.now(), reserva.fecha_hora_reserva)
-            messages.success(self.request, f'Reserva actualizada y estado cambiado a {nuevo_estado}.')
-        else:
-            messages.success(self.request, 'Reserva actualizada exitosamente.')
-        
         return super().form_valid(form)
 
 class VerPedidosView(LoginRequiredMixin, UserPassesTestMixin, ListView):
